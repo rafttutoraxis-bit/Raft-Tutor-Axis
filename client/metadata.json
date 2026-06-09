@@ -1,0 +1,6 @@
+{
+  "name": "Raft Tutor Axis",
+  "description": "Premium Teacher-Providing and Home Tuition Platform across India. Connects schools, institutes, parents, and qualified tutors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
