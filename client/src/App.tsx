@@ -227,9 +227,10 @@ export default function App() {
                 className="bg-brand-logo-dark border border-[#9bfc07]/10 rounded-2xl overflow-hidden shadow-lg flex flex-col hover:shadow-2xl hover:border-[#9bfc07]/30 transition-all duration-300"
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
-                  <img 
-                    src="/client/src/PK.png"
-                    alt=PK
+                  <img
+                    src={founder.image}
+                    alt={founder.name}
+                  />
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
                   />
