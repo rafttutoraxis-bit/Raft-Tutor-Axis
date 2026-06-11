@@ -228,8 +228,8 @@ export default function App() {
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img 
-                    src={founder.image} 
-                    alt={founder.name}
+                    src="/client/src/PK.png"
+                    alt=PK
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
                   />
