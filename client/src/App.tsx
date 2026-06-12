@@ -228,10 +228,9 @@ export default function App() {
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img
-                    src={founder.image}
-                    alt={founder.name}
-                  />
-                    referrerPolicy="no-referrer"
+                   src={founder.image}
+                   alt={founder.name}
+                   referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
                   />
                   <div className="absolute bottom-4 left-4 bg-brand-logo-dark/90 px-3 py-1.5 text-[10px] uppercase font-mono tracking-widest text-[#9bfc07] rounded-md border border-[#9bfc07]/20">
