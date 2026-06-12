@@ -145,13 +145,13 @@ export const founderCardsList = [
     name: "PK Singh",
     role: "Founder & CEO",
     bio: "Visionary educator with over 15 years in educational pedagogy. Dedicated to creating equitable learning clusters across Tier-2 and Tier-3 Indian cities.",
-    image: "client/src/PK.png"
+    image: "/client/src/PK.png"
   },
   {
     name: "Bhushan Gaurav",
     role: "Co-Founder & Managing Director",
     bio: "Operations heavyweight bringing swift matchmaking processes. Spearheads India's growing verified teacher verification and deployment infrastructure.",
-    image: "client/src/BG.png"
+    image: "/client/src/BG.png"
   }
 ];
 
