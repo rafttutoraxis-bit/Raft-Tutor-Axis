@@ -104,7 +104,7 @@ export default function Footer({ lang, onNavigate }: FooterProps) {
                 </div>
                 <p className="text-xs text-gray-300 pl-7 text-wrap break-all">
                   <a href="mailto:info@rafttutoraxis.com" className="hover:underline hover:text-[#9bfc07] transition-all font-bold">
-                    info@rafttutoraxis.com
+                    rafttutoraxis@gmail.com
                   </a>
                 </p>
               </div>
