@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Mail, MapPin, ShieldCheck, Globe, HelpCircle, Linkedin, Instagram, Twitter } from "lucide-react";
+import { Phone, Mail, MapPin, ShieldCheck, Globe } from "lucide-react";
 import Logo from "./Logo";
 
 interface FooterProps {
@@ -47,45 +47,6 @@ export default function Footer({ lang, onNavigate }: FooterProps) {
               <p className="text-white text-sm font-extrabold mt-1">
                 100% Verified Tutors
               </p>
-            </div>
-          </div>
-
-          {/* Social Media Links */}
-          <div className="space-y-2.5">
-            <span className="text-[10px] text-[#9bfc07] font-black uppercase tracking-widest block">
-              {lang === "en" ? "Connect With Us" : "हमसे जुड़ें"}
-            </span>
-            <div className="flex gap-3">
-              <a 
-                href="https://linkedin.com/company/raft-tutor-axis" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="w-10 h-10 rounded-xl bg-[#110d22] border border-[#9bfc07]/20 flex items-center justify-center text-gray-300 hover:text-[#9bfc07] hover:border-[#9bfc07] hover:shadow-[0_0_10px_rgba(155,252,7,0.15)] transition-all duration-300 group"
-                title="LinkedIn"
-                id="footer-social-linkedin"
-              >
-                <Linkedin className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </a>
-              <a 
-                href="https://instagram.com/raft_tutor_axis" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="w-10 h-10 rounded-xl bg-[#110d22] border border-[#9bfc07]/20 flex items-center justify-center text-gray-300 hover:text-[#9bfc07] hover:border-[#9bfc07] hover:shadow-[0_0_10px_rgba(155,252,7,0.15)] transition-all duration-300 group"
-                title="Instagram"
-                id="footer-social-instagram"
-              >
-                <Instagram className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </a>
-              <a 
-                href="https://twitter.com/raft_tutor_axis" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="w-10 h-10 rounded-xl bg-[#110d22] border border-[#9bfc07]/20 flex items-center justify-center text-gray-300 hover:text-[#9bfc07] hover:border-[#9bfc07] hover:shadow-[0_0_10px_rgba(155,252,7,0.15)] transition-all duration-300 group"
-                title="Twitter"
-                id="footer-social-twitter"
-              >
-                <Twitter className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </a>
             </div>
           </div>
         </div>
