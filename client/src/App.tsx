@@ -113,7 +113,7 @@ export default function App() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
                   <div className="text-white text-xs">
-                    <p className="font-bold uppercase tracking-wider text-[#9bfc07]">Empowering Pedagogy</p>
+                    <p className="font-bold uppercase tracking-wider text-[#9bfc07]">Empowering Education</p>
                     <p className="mt-1 text-gray-300">Personalized trial schedules for higher secondary scholars.</p>
                   </div>
                 </div>
