@@ -286,14 +286,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Admin Panel Console Portal key check */}
-      <div key={syncKey} id="admin-panel-console">
-        <AdminPanel 
-          lang={lang} 
-          onForceRefresh={triggerAdminRefresh} 
-        />
-      </div>
-
       {/* Consolidated Footer detailing contacts and Maps */}
       <Footer 
         lang={lang} 
