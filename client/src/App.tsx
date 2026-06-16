@@ -5,7 +5,6 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Stats from "./components/Stats";
 import Forms from "./components/Forms";
-import AdminPanel from "./components/AdminPanel";
 import ChatBot from "./components/ChatBot";
 import OnboardingFlow from "./components/OnboardingFlow";
 import Footer from "./components/Footer";
@@ -58,7 +57,7 @@ export default function App() {
           onClose={() => setShowOnboarding(false)} 
         />
       )}
-
+      
       {/* Corporate Sticky Navbar */}
       <Navbar 
         currentLang={lang} 
