@@ -154,24 +154,6 @@ export default function Footer({ lang, onNavigate }: FooterProps) {
 
       </div>
 
-      {/* Map Location Operating Strip */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-12">
-        <div className="bg-[#110d22] border border-brand-logo-green/10 rounded-xl px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-2.5 text-xs text-gray-300 font-sans tracking-tight">
-            <span className="text-rose-500 text-base">📍</span>
-            <span className="font-medium">
-              {lang === "en" 
-                ? "Operating across Bihar, UP & Gujarat" 
-                : "बिहार, यूपी और गुजरात में संचालित"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-black tracking-widest text-white uppercase select-none">
-            <span className="text-xs">{lang === "en" ? "MAP ONLINE" : "नक्शा ऑनलाइन"}</span>
-            <Globe className="w-4 h-4 text-[#9bfc07] animate-pulse" />
-          </div>
-        </div>
-      </div>
-
       {/* Ground Footnote */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-brand-logo-green/10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-gray-400 font-sans">
