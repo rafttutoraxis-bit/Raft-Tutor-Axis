@@ -40,7 +40,6 @@ export default function Navbar({
     { id: "inquiry-forms-section", label: currentLang === "en" ? "Register" : "पंजीकरण" },
     { id: "founders", label: currentLang === "en" ? "Founders" : "संस्थापक" },
     { id: "contact", label: currentLang === "en" ? "Contact" : "संपर्क" },
-    { id: "admin-panel-console", label: currentLang === "en" ? "Staff Gate" : "स्टाफ" }
   ];
 
   return (
