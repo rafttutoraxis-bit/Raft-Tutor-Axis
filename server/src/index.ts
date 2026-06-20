@@ -132,7 +132,11 @@ app.post(
   async (req, res) => {
     try {
       const files = req.files as Record<string, Express.Multer.File[]> | undefined;
-      const resumeUrl = files?.resume?.[0] ? `/uploads/${files.resume[0].filename}` : "";
+      const resumeFile = files?.resume?.[0];
+      if (!resumeFile) {
+        return res.status(400).json({ error: "Resume file upload is compulsory." });
+      }
+      const resumeUrl = `/uploads/${resumeFile.filename}`;
       const photoUrl = files?.photo?.[0] ? `/uploads/${files.photo[0].filename}` : "";
       const record = await TeacherRegistration.create({
         ...req.body,
@@ -211,6 +215,21 @@ app.post(
           req.ip,
         );
         return res.json({ success: true, isApproved: teacher.isApproved });
+      }
+
+      if (actionType === "toggle_payment") {
+        const teacher = await TeacherRegistration.findById(id);
+        if (!teacher) {
+          return res.status(404).json({ error: "Teacher not found" });
+        }
+        teacher.paymentStatus = teacher.paymentStatus === "Paid" ? "Pending" : "Paid";
+        await teacher.save();
+        await logAction(
+          adminUser,
+          `Toggled payment status to ${teacher.paymentStatus} for Teacher: ${teacher.name}`,
+          req.ip,
+        );
+        return res.json({ success: true, paymentStatus: teacher.paymentStatus });
       }
 
       res.status(400).json({ error: "Invalid admin action request" });

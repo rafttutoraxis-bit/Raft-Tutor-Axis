@@ -31,10 +31,12 @@ const teacherRegistrationSchema = new Schema(
     classes: { type: String, required: true, trim: true },
     mode: { type: String, enum: ["Home", "Online", "Both"], default: "Both" },
     expectedFees: { type: String, default: "", trim: true },
-    resumeUrl: { type: String, default: "" },
+    resumeUrl: { type: String, required: true, trim: true },
     photoUrl: { type: String, default: "" },
     address: { type: String, required: true, trim: true },
     isApproved: { type: Boolean, default: false },
+    paymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
+    txnId: { type: String, default: "" },
   },
   timestamps,
 );
@@ -70,8 +72,6 @@ const adminUserSchema = new Schema(
   },
   timestamps,
 );
-
-adminUserSchema.index({ email: 1 }, { unique: true });
 
 export const ParentInquiry = mongoose.model("ParentInquiry", parentInquirySchema);
 export const TeacherRegistration = mongoose.model("TeacherRegistration", teacherRegistrationSchema);

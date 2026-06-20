@@ -11,14 +11,27 @@ export const seedInitialAdmin = async () => {
     return;
   }
 
-  const existing = await AdminUser.findOne({ email });
-  if (existing) {
-    return;
-  }
-
   const passwordHash = await bcrypt.hash(password, 12);
   const role = (process.env.ADMIN_ROLE || "Super Admin") as AdminRole;
   const name = process.env.ADMIN_NAME || "Raft Tutor Axis Admin";
+
+  const existing = await AdminUser.findOne({ email });
+  if (existing) {
+    const matches = await bcrypt.compare(password, existing.passwordHash);
+    if (!matches || existing.name !== name || existing.role !== role) {
+      existing.passwordHash = passwordHash;
+      existing.role = role;
+      existing.name = name;
+      await existing.save();
+      await AdminLog.create({
+        user: "System",
+        action: `Updated credentials/profile for ${email}`,
+        ip: "127.0.0.1",
+      });
+      console.log(`[seed] Updated existing admin account for ${email} with latest config.`);
+    }
+    return;
+  }
 
   await AdminUser.create({ name, email, passwordHash, role });
   await AdminLog.create({
