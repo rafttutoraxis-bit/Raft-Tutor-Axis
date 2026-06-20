@@ -120,7 +120,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
     }
   };
 
-  const executeAdminAction = async (actionType: "delete" | "approve_teacher", entityType: string, id: string) => {
+  const executeAdminAction = async (actionType: "delete" | "approve_teacher" | "toggle_payment", entityType: string, id: string) => {
     // Only Super Admins can delete critical records to ensure safety
     if (actionType === "delete" && role !== "Super Admin") {
       alert("Permission Denied: Only Super Admin has deletion rights.");
@@ -179,9 +179,9 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
         `"${p.id}","${p.name}","${p.mobile}","${p.email}","${p.city}","${p.studentClass}","${p.board}","${p.subjects}","${p.mode}","${p.address?.replace(/"/g, '""')}","${p.createdAt}"`
       );
     } else if (entityType === "teachers") {
-      headers = "ID,Name,Mobile,Email,Gender,City,Qualification,Experience,Subjects,Classes,Mode,ExpectedFees,Approved,Created_At\n";
+      headers = "ID,Name,Mobile,Email,Gender,City,Qualification,Experience,Subjects,Classes,Mode,ExpectedFees,Approved,PaymentStatus,TxnID,Created_At\n";
       rows = teachers.map(t => 
-        `"${t.id}","${t.name}","${t.mobile}","${t.email}","${t.gender}","${t.city}","${t.qualification}","${t.experience}","${t.subjects}","${t.classes}","${t.mode}","${t.expectedFees}","${t.isApproved}","${t.createdAt}"`
+        `"${t.id}","${t.name}","${t.mobile}","${t.email}","${t.gender}","${t.city}","${t.qualification}","${t.experience}","${t.subjects}","${t.classes}","${t.mode}","${t.expectedFees}","${t.isApproved}","${t.paymentStatus || "Pending"}","${t.txnId || ""}","${t.createdAt}"`
       );
     } else {
       headers = "ID,OrgName,ContactPerson,Phone,Email,Location,Details,Created_At\n";
@@ -669,6 +669,20 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
                           <Check className={`w-3 h-3 ${t.isApproved ? "" : "hidden"}`} />
                           <span>{t.isApproved ? "Approved Network Member" : "Verification Pending"}</span>
                         </span>
+                        <div className="mt-1.5 flex flex-col gap-1 items-start">
+                          <span className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest ${
+                            t.paymentStatus === "Paid" 
+                              ? "bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400" 
+                              : "bg-rose-100 dark:bg-rose-950/20 text-rose-800 dark:text-rose-400"
+                          }`}>
+                            Fee ₹149: {t.paymentStatus || "Pending"}
+                          </span>
+                          {t.txnId && (
+                            <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 select-all leading-none mt-0.5">
+                              Txn: {t.txnId}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -678,6 +692,13 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
                           >
                             <Check className="w-3.5 h-3.5 shrink-0" />
                             <span>Toggle Approval</span>
+                          </button>
+
+                          <button
+                            onClick={() => executeAdminAction("toggle_payment", "teachers", t.id)}
+                            className="p-1 px-2 border border-gray-200 dark:border-gray-800 hover:border-blue-500 dark:hover:border-blue-400 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-md text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span>Toggle Fee</span>
                           </button>
 
                           <button

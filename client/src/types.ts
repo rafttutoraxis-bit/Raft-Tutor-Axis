@@ -30,6 +30,8 @@ export interface TeacherRegistration {
   photoUrl: string;  // Base64 data-URI or placeholder
   address: string;
   isApproved: boolean;
+  paymentStatus?: 'Pending' | 'Paid';
+  txnId?: string;
   createdAt: string;
 }
 

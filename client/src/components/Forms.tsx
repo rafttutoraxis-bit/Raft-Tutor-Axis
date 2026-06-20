@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Phone, Mail, MapPin, GraduationCap, Briefcase, BookOpen, Layers, IndianRupee, FileText, Camera, CheckCircle2, AlertCircle, Sparkles, Building, Send } from "lucide-react";
+import { User, Phone, Mail, MapPin, GraduationCap, Briefcase, BookOpen, Layers, IndianRupee, FileText, Camera, CheckCircle2, AlertCircle, Sparkles, Building, Send, QrCode, Shield, RefreshCw } from "lucide-react";
 import { API_URL } from "../config";
 
 interface FormsProps {
@@ -57,6 +57,13 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
+  // Payment gateway states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"qr" | "express">("qr");
+  const [upiTxnId, setUpiTxnId] = useState("");
+  const [isPaying, setIsPaying] = useState(false);
+  const [paySuccess, setPaySuccess] = useState(false);
+
   // File processors
   const handlePhotoLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,7 +87,15 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
   const handleParentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!parentData.name || !parentData.mobile || !parentData.email || !parentData.city) {
+    if (
+      !parentData.name ||
+      !parentData.mobile ||
+      !parentData.email ||
+      !parentData.city ||
+      !parentData.studentClass ||
+      !parentData.subjects ||
+      !parentData.address
+    ) {
       setStatus({ type: "error", message: lang === "en" ? "Please fill all required keys." : "कृपया सभी आवश्यक विवरण भरें।" });
       return;
     }
@@ -123,12 +138,40 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
     }
   };
 
-  const handleTeacherSubmit = async (e: React.FormEvent) => {
+  const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherData.name || !teacherData.mobile || !teacherData.email || !teacherData.city || !teacherData.qualification) {
-      setStatus({ type: "error", message: "Required coordinates missing." });
+    if (
+      !teacherData.name ||
+      !teacherData.mobile ||
+      !teacherData.email ||
+      !teacherData.city ||
+      !teacherData.qualification ||
+      !teacherData.experience ||
+      !teacherData.subjects ||
+      !teacherData.classes ||
+      !teacherData.address ||
+      !resumeFile
+    ) {
+      setStatus({ type: "error", message: "Required fields missing. Please fill out all fields and upload your Resume/Biodata." });
       return;
     }
+    setStatus({ type: null, message: "" });
+    setShowPaymentModal(true);
+  };
+
+  const handleExpressPay = (provider: string) => {
+    setIsPaying(true);
+    setTimeout(() => {
+      setIsPaying(false);
+      setPaySuccess(true);
+      setTimeout(() => {
+        const mockTxnId = "TXN" + Math.floor(100000000000 + Math.random() * 900000000000);
+        executeTeacherSubmit(true, mockTxnId);
+      }, 1500);
+    }, 1500);
+  };
+
+  const executeTeacherSubmit = async (isPaid: boolean, txnIdToSave: string = "") => {
     setLoading(true);
     setStatus({ type: null, message: "" });
 
@@ -142,6 +185,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       if (resumeFile) formData.append("resume", resumeFile);
       if (photoFile) formData.append("photo", photoFile);
 
+      formData.append("paymentStatus", isPaid ? "Paid" : "Pending");
+      formData.append("txnId", txnIdToSave);
+
       const response = await fetch(`${API_URL}/api/teacher-registration`, {
         method: "POST",
         body: formData
@@ -149,7 +195,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       if (response.ok) {
         setStatus({
           type: "success",
-          message: "Registered successfully! Our Academic Operations Head (Bhushan Gaurav) will contact you for verification shortly."
+          message: isPaid
+            ? `Payment verified! Registered successfully under Transaction ID ${txnIdToSave}. Our Academic Operations Head will contact you for verification shortly.`
+            : "Registered successfully (Registration Fee ₹149 Pending)! Our Academic Operations Head will contact you for verification shortly."
         });
         setTeacherData({
           name: "",
@@ -169,6 +217,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         });
         setResumeFile(null);
         setPhotoFile(null);
+        setUpiTxnId("");
         if (onNewRegistration) onNewRegistration();
       } else {
         throw new Error();
@@ -177,12 +226,21 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       setStatus({ type: "error", message: "Failed to reach registration engine." });
     } finally {
       setLoading(false);
+      setShowPaymentModal(false);
+      setPaySuccess(false);
     }
   };
 
   const handleSchoolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!schoolData.orgName || !schoolData.contactPerson || !schoolData.phone) {
+    if (
+      !schoolData.orgName ||
+      !schoolData.contactPerson ||
+      !schoolData.phone ||
+      !schoolData.email ||
+      !schoolData.location ||
+      !schoolData.details
+    ) {
       setStatus({ type: "error", message: "Organization name and phone details are mandatory." });
       return;
     }
@@ -614,7 +672,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
                 <div>
                   {/* CV Loader */}
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Upload Biodata / Resume</label>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Upload Biodata / Resume *</label>
                   <div className="flex items-center gap-3">
                     <label className="cursor-pointer bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-brand-primary px-3 py-2.5 rounded-lg flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300 font-medium select-none">
                       <FileText className="w-3.5 h-3.5 text-brand-primary" />
@@ -654,6 +712,16 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white p-3.5 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary h-20 resize-none"
                   required
                 />
+              </div>
+
+              <div className="flex items-center gap-1.5 p-3.5 bg-[#9bfc07]/10 rounded-xl border border-[#9bfc07]/20 text-xs text-[#9bfc07]">
+                <Sparkles className="w-4 h-4 animate-pulse shrink-0" />
+                <span>
+                  <strong>{lang === "en" ? "REGISTRATION FEE:" : "पंजीकरण शुल्क:"}</strong>{" "}
+                  {lang === "en" 
+                    ? "A one-time verification and registration fee of ₹149 applies to join India's Vetted Educator Network." 
+                    : "शिक्षक नेटवर्क में शामिल होने के लिए ₹149 का एकमुश्त सत्यापन और पंजीकरण शुल्क लागू होता है।"}
+                </span>
               </div>
 
               <button
@@ -824,6 +892,191 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
         </div>
       </div>
+
+      {/* Premium secure payment overlay modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-[#1b1631] border border-[#9bfc07]/25 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-white space-y-6">
+            <div className="text-center relative">
+              <div className="mx-auto w-12 h-12 bg-[#9bfc07]/10 border border-[#9bfc07]/30 rounded-full flex items-center justify-center text-[#9bfc07] mb-3.5">
+                <Shield className="w-6 h-6 animate-pulse" />
+              </div>
+              <h3 className="font-display font-bold text-lg leading-tight uppercase tracking-wider">
+                RTA Pay-Gate Security
+              </h3>
+              <p className="text-[10px] text-zinc-400 font-mono tracking-widest mt-1">
+                SECURE UPI TRANSACTIONS DESK
+              </p>
+            </div>
+
+            <div className="bg-[#110d22] border border-[#9bfc07]/10 p-4 rounded-xl space-y-2">
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>Account Tier</span>
+                <span className="font-bold text-white">Vetted Network Member</span>
+              </div>
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>Verification & Registration Fee</span>
+                <span className="font-bold text-white">₹149.00</span>
+              </div>
+              <div className="border-t border-[#9bfc07]/10 pt-2 flex justify-between text-sm font-semibold">
+                <span className="text-[#9bfc07]">Total Due Amount</span>
+                <span className="text-[#9bfc07]">₹149.00</span>
+              </div>
+            </div>
+
+            <div className="flex bg-[#110d22] p-1 rounded-lg border border-[#9bfc07]/10">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("qr")}
+                className={`flex-1 py-2 text-center text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  paymentMethod === "qr"
+                    ? "bg-[#9bfc07] text-[#1b1631]"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Scan QR Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("express")}
+                className={`flex-1 py-2 text-center text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  paymentMethod === "express"
+                    ? "bg-[#9bfc07] text-[#1b1631]"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Express Apps
+              </button>
+            </div>
+
+            {paymentMethod === "qr" && (
+              <div className="space-y-4 text-center">
+                <p className="text-[10px] text-zinc-400">
+                  Scan this QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to make the ₹149 payment.
+                </p>
+                
+                {/* Simulated QR Code CSS mockup */}
+                <div className="mx-auto w-36 h-36 bg-white p-2.5 rounded-xl flex flex-col items-center justify-center relative overflow-hidden border-2 border-[#9bfc07]/20 select-none shadow-md">
+                  <div className="w-full h-full bg-[#110d22] rounded flex flex-col items-center justify-center text-[10px] font-mono text-[#9bfc07] font-bold gap-1 border border-[#9bfc07]/30">
+                    <QrCode className="w-10 h-10 stroke-1" />
+                    <span>RTA-PAY-₹149</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#9bfc07]/10 to-transparent w-full h-full pointer-events-none animate-scan" style={{ animationDuration: '3s', animationIterationCount: 'infinite' }} />
+                </div>
+
+                <div className="text-[10px] font-mono text-zinc-400">
+                  UPI ID: <span className="text-[#9bfc07] font-bold select-all font-mono">rafttutoraxis@upi</span>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">UPI Transaction ID (12 digits) *</label>
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={upiTxnId}
+                    onChange={(e) => setUpiTxnId(e.target.value.replace(/\D/g, ""))}
+                    placeholder="e.g. 620535576012"
+                    className="w-full bg-[#110d22] border border-[#9bfc07]/20 focus:border-[#9bfc07] outline-none px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-zinc-500 font-mono tracking-widest"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (upiTxnId.length !== 12) {
+                      alert("Please enter a valid 12-digit UPI Transaction ID.");
+                      return;
+                    }
+                    executeTeacherSubmit(true, upiTxnId);
+                  }}
+                  disabled={loading}
+                  className="w-full py-3.5 bg-[#9bfc07] hover:bg-white text-[#1b1631] font-display font-semibold transition-all rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-[#9bfc07]/10 flex items-center justify-center gap-1.5"
+                >
+                  {loading ? "Verifying Transaction ID..." : "Submit Verification ID"}
+                </button>
+              </div>
+            )}
+
+            {paymentMethod === "express" && (
+              <div className="space-y-4">
+                <p className="text-[10px] text-zinc-400 text-center">
+                  Select your UPI app for instant automated checkout and approval.
+                </p>
+
+                {isPaying ? (
+                  <div className="py-8 text-center flex flex-col items-center justify-center gap-4">
+                    <RefreshCw className="w-10 h-10 text-[#9bfc07] animate-spin" />
+                    <p className="text-xs font-semibold">Simulating UPI secure gateway connection...</p>
+                    <p className="text-[10px] text-zinc-400 font-mono">DO NOT CLOSE THIS MODAL</p>
+                  </div>
+                ) : paySuccess ? (
+                  <div className="py-8 text-center flex flex-col items-center justify-center gap-4">
+                    <CheckCircle2 className="w-12 h-12 text-[#9bfc07] animate-bounce" />
+                    <p className="text-sm font-semibold text-[#9bfc07]">UPI Payment Authorized Successfully! 🎉</p>
+                    <p className="text-[10px] text-zinc-400">Finalizing teacher registration profile...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <button
+                      type="button"
+                      onClick={() => handleExpressPay("GPay")}
+                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                    >
+                      <span className="text-sm">🔵</span>
+                      <span>Google Pay</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExpressPay("PhonePe")}
+                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                    >
+                      <span className="text-sm">🟣</span>
+                      <span>PhonePe</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExpressPay("Paytm")}
+                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                    >
+                      <span className="text-sm">🔷</span>
+                      <span>Paytm UPI</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExpressPay("BHIM")}
+                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                    >
+                      <span className="text-sm">🇮🇳</span>
+                      <span>BHIM UPI</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isPaying && !paySuccess && (
+              <div className="flex gap-3.5 pt-3 border-t border-[#9bfc07]/10">
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(false)}
+                  className="flex-1 py-3 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-semibold uppercase tracking-wider cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => executeTeacherSubmit(false)}
+                  className="flex-1 py-3 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-300 rounded-xl text-[10px] font-bold uppercase tracking-wider cursor-pointer text-center"
+                  title="Registers your profile but keeps verification status pending payment"
+                >
+                  Pay Later
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </section>
   );
 }
