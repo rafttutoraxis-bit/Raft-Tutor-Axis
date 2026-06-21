@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 import { ParentRegistration, TeacherRegistration, SchoolRequest, AdminLog } from "../types";
-
+import Sidebar from "./Admin/Sidebar";
 interface AdminPanelProps {
   onForceRefresh?: () => void;
   lang: "en" | "hi";
