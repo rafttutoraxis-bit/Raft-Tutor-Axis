@@ -692,14 +692,14 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
                             className="p-1 px-2 border border-gray-200 dark:border-gray-800 hover:border-brand-primary dark:hover:border-blue-400 text-brand-primary dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-md text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
                           >
                             <Check className="w-3.5 h-3.5 shrink-0" />
-                            <span>Toggle Approval</span>
+                            <span>Approval</span>
                           </button>
 
                           <button
                             onClick={() => executeAdminAction("toggle_payment", "teachers", t.id)}
                             className="p-1 px-2 border border-gray-200 dark:border-gray-800 hover:border-blue-500 dark:hover:border-blue-400 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-md text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
                           >
-                            <span>Toggle Fee</span>
+                            <span>Fee</span>
                           </button>
 
                           <button
