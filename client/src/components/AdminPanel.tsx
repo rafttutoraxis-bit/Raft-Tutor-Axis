@@ -566,8 +566,8 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
 
         {/* Parent registrations list */}
         {activeTab === "parents" && (
-          <div className="bg-white dark:bg-brand-dark-bg border border-gray-150 dark:border-gray-850 rounded-xl overflow-x-auto shadow-sm">
-            <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="bg-[#111827] border border-gray-800 rounded-xl overflow-x-auto shadow-sm">
+              <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 uppercase tracking-widest text-[9px] font-bold text-gray-500">
                   <th className="px-5 py-3">Student / Parent Details</th>
