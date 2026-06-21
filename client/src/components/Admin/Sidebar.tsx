@@ -1,8 +1,33 @@
+import React from "react";
+
 export default function Sidebar() {
   return (
-    <div className="bg-slate-900 text-white p-4 rounded-xl">
-      <h2 className="text-lg font-bold">Admin Sidebar</h2>
-      <p className="text-sm text-gray-400">Sidebar Component Working</p>
+    <div className="bg-slate-900 rounded-xl p-5 text-white">
+      <h2 className="font-bold text-xl mb-4">
+        Navigation
+      </h2>
+
+      <div className="space-y-2">
+        <button className="w-full text-left p-2 rounded bg-blue-600">
+          Analytics
+        </button>
+
+        <button className="w-full text-left p-2 rounded hover:bg-slate-800">
+          Parents
+        </button>
+
+        <button className="w-full text-left p-2 rounded hover:bg-slate-800">
+          Teachers
+        </button>
+
+        <button className="w-full text-left p-2 rounded hover:bg-slate-800">
+          Schools
+        </button>
+
+        <button className="w-full text-left p-2 rounded hover:bg-slate-800">
+          Logs
+        </button>
+      </div>
     </div>
   );
 }
