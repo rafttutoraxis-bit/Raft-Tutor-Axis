@@ -25,6 +25,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<"analytics" | "parents" | "teachers" | "schools" | "logs" | "ai">("analytics");
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<  "all" | "pending" | "approved"  >("all");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
