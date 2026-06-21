@@ -25,7 +25,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<"analytics" | "parents" | "teachers" | "schools" | "logs" | "ai">("analytics");
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<  "all" | "pending" | "approved"  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" >("all");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -540,6 +540,20 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
                 className="w-full bg-white dark:bg-[#0c121a] px-3 py-2 rounded-lg text-xs outline-none focus:border-brand-primary border border-gray-200 dark:border-gray-800"
               />
             </div>
+
+            <div className="w-full md:w-48">
+  <select
+    value={statusFilter}
+    onChange={(e) =>
+      setStatusFilter(e.target.value as "all" | "pending" | "approved")
+    }
+    className="w-full bg-white dark:bg-[#0c121a] px-3 py-2 rounded-lg text-xs outline-none border border-gray-200 dark:border-gray-800"
+  >
+    <option value="all">All Status</option>
+    <option value="approved">Approved</option>
+    <option value="pending">Pending</option>
+  </select>
+</div>
 
             <button
               onClick={() => exportToCSV(activeTab)}
