@@ -366,8 +366,8 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
             onClick={() => setActiveTab("analytics")}
             className={`px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
               activeTab === "analytics"
-                ? "bg-slate-100 dark:bg-gray-800 text-brand-primary"
-                : "text-gray-500 hover:text-brand-primary"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "text-gray-400 hover:bg-slate-800 hover:text-white"
             }`}
           >
             📊 {lang === "en" ? "Analytics" : "विश्लेषण"}
