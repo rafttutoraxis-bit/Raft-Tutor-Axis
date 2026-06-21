@@ -518,7 +518,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
 
         {/* Search controls for lists */}
         {activeTab !== "analytics" && activeTab !== "logs" && activeTab !== "ai" && (
-          <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-50 dark:bg-gray-900 p-4 border border-gray-150 dark:border-gray-800 rounded-xl mb-6">
+          <div className="flex flex-col md:flex-row items-center gap-4 bg-[#1f2937] p-4 border border-gray-800 rounded-xl mb-6">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <input
@@ -739,7 +739,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
 
         {/* School recruitment inquiries list */}
         {activeTab === "schools" && (
-          <div className="bg-white dark:bg-brand-dark-bg border border-gray-150 dark:border-gray-850 rounded-xl overflow-x-auto shadow-sm">
+          <div className="bg-[#111827] border border-gray-150 dark:border-gray-850 rounded-xl overflow-x-auto shadow-sm">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 uppercase tracking-widest text-[9px] font-bold text-gray-500">
