@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useState, useEffect } from "react";
 import { 
   Lock, Search, Shield, Trash2, Check, Download, AlertTriangle, 
@@ -64,7 +65,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
   const fetchDatabase = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/data", {
+      const response = await fetch(`${API_URL}/api/data`, {
         headers: authHeaders()
       });
       if (response.ok) {
@@ -95,7 +96,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/admin/login", {
+      const response = await fetch(`${API_URL}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -128,7 +129,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
     }
 
     try {
-      const response = await fetch("/api/admin/action", {
+      const response = await fetch(`${API_URL}/api/admin/action`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -151,7 +152,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
     setGeneratingReport(true);
     setAiReport("");
     try {
-      const response = await fetch("/api/admin/gemini-report", {
+      const response = await fetch(`${API_URL}/api/admin/gemini-report`, {
         method: "POST",
         headers: authHeaders()
       });
