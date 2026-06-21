@@ -12,6 +12,16 @@ import {
 
 import { ParentRegistration, TeacherRegistration, SchoolRequest, AdminLog } from "../types";
 import Sidebar from "./Admin/Sidebar";
+import Header from "./Admin/Header";
+import Dashboard from "./Admin/Dashboard";
+import AnalyticsCards from "./Admin/AnalyticsCards";
+import SearchBar from "./Admin/SearchBar";
+import ParentTable from "./Admin/ParentTable";
+import TeacherTable from "./Admin/TeacherTable";
+import SchoolTable from "./Admin/SchoolTable";
+import LogsTable from "./Admin/LogsTable";
+import AIReport from "./Admin/AIReport";
+
 interface AdminPanelProps {
   onForceRefresh?: () => void;
   lang: "en" | "hi";
