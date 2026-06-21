@@ -526,7 +526,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
                 placeholder={lang === "en" ? "Search by name or subjects..." : "नाम या विषय से खोजें..."}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#0c121a] pl-9 pr-4 py-2 rounded-lg text-xs outline-none focus:border-brand-primary border border-gray-200 dark:border-gray-800"
+                className="w-full bg-[#0f172a] text-white pl-9 pr-4 py-2 rounded-lg text-xs outline-none focus:border-brand-primary border border-gray-700"
               />
             </div>
 
