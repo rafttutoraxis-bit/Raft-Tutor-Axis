@@ -335,40 +335,12 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Console Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur-xl shadow-2xl border border-slate-800 text-white p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-blue-500 rounded-full text-[9px] font-bold uppercase tracking-widest">
-                {role} Level
-              </span>
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] text-zinc-400 font-mono">Admin: {username}</span>
-            </div>
-            <h2 className="font-display font-semibold text-lg text-white mt-1">
-              Raft Tutor Axis Administration Hub
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchDatabase}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-zinc-300 rounded-lg text-xs transition-all flex items-center gap-1.5 border border-slate-700 cursor-pointer"
-              title="Reload Sync Database"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Sync</span>
-            </button>
-
-            <button
-              onClick={logout}
-              className="p-2 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 rounded-lg text-xs transition-all flex items-center gap-1.5 border border-rose-900/40 cursor-pointer"
-              title="Logout Session"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
+          <Header
+          username={username}
+          role={role}
+          onRefresh={fetchDatabase}
+          onLogout={logout}
+          />
 
         {/* Tab Switcher Grid */}
         <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 dark:border-gray-850 pb-4 mb-8">
