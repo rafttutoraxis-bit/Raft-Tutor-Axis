@@ -325,7 +325,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Console Header */}
-        <div className="bg-slate-900 border border-slate-800 text-white p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur-xl shadow-2xl border border-slate-800 text-white p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 bg-blue-500 rounded-full text-[9px] font-bold uppercase tracking-widest">
