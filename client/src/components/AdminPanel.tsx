@@ -321,8 +321,7 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
   }
 
   return (
-    <section className="py-12 bg-white dark:bg-brand-dark-bg transition-colors duration-300" id="admin-panel-console">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="py-12 bg-[#0b1120] min-h-screen transition-colors duration-300" id="admin-panel-console">      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Console Header */}
         <div className="bg-slate-900 border border-slate-800 text-white p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
