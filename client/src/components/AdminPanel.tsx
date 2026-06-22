@@ -405,99 +405,15 @@ export default function AdminPanel({ onForceRefresh, lang }: AdminPanelProps) {
 
         {/* Dynamic Context Panel */}
         {activeTab === "analytics" && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Numeric Indicators */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-              <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/10 dark:to-blue-950/25 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                <Users className="w-6 h-6 text-brand-primary mb-2.5" />
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Total Parent Inquiries</h4>
-                <p className="text-3xl font-display font-semibold text-gray-900 dark:text-white mt-1">{parents.length}</p>
-              </div>
-
-              <div className="p-5 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/10 dark:to-emerald-950/25 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                <Users className="w-6 h-6 text-emerald-600 mb-2.5" />
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Approved Instructors</h4>
-                <p className="text-3xl font-display font-semibold text-gray-900 dark:text-white mt-1">
-                  {teachers.filter(t => t.isApproved).length} <span className="text-xs text-gray-400 font-normal">/ {teachers.length}</span>
-                </p>
-              </div>
-
-              <div className="p-5 bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-950/10 dark:to-rose-950/25 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                <FolderCheck className="w-6 h-6 text-brand-secondary mb-2.5" />
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">School Vacancy Postings</h4>
-                <p className="text-3xl font-display font-semibold text-gray-900 dark:text-white mt-1">{schools.length}</p>
-              </div>
-
-              <div className="p-5 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/10 dark:to-purple-950/25 rounded-xl border border-purple-100 dark:border-purple-900/30">
-                <Activity className="w-6 h-6 text-purple-600 mb-2.5" />
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Admin Actions Logged</h4>
-                <p className="text-3xl font-display font-semibold text-gray-900 dark:text-white mt-1">{logs.length}</p>
-              </div>
-            </div>
-
-            {/* Graphical Dashboards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-              {/* Graphic 1: Recharts Bar Chart */}
-              <div className="p-6 bg-slate-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-2xl shadow-sm">
-                <h4 className="font-display font-semibold text-sm text-gray-805 dark:text-white mb-6">
-                  Inquiry Share by City Presence
-                </h4>
-                {parents.length === 0 ? (
-                  <div className="h-64 flex items-center justify-center text-xs text-gray-400">
-                    No registrations captured yet.
-                  </div>
-                ) : (
-                  <div className="h-64 text-xs font-mono">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={getCitySpreadData()}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                        <XAxis dataKey="city" stroke="#888888" />
-                        <YAxis stroke="#888888" />
-                        <Tooltip />
-                        <Bar dataKey="inquiries" fill="#0B6FB8" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-
-              {/* Graphic 2: Pie Chart */}
-              <div className="p-6 bg-slate-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-2xl shadow-sm">
-                <h4 className="font-display font-semibold text-sm text-gray-805 dark:text-white mb-6">
-                  Target Student School Boards
-                </h4>
-                {parents.length === 0 ? (
-                  <div className="h-64 flex items-center justify-center text-xs text-gray-400">
-                    No registrations captured yet.
-                  </div>
-                ) : (
-                  <div className="h-64 text-xs">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={getBoardDistributionData()}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {getBoardDistributionData().map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
-        )}
+          <Dashboard
+          parents={parents}
+          teachers={teachers}
+          schools={schools}
+          logs={logs}
+          getCitySpreadData={getCitySpreadData}
+          getBoardDistributionData={getBoardDistributionData}
+          COLORS={COLORS}
+        />
 
         {/* Search controls for lists */}
         {activeTab !== "analytics" && activeTab !== "logs" && activeTab !== "ai" && (
