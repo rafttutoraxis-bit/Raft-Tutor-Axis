@@ -5,6 +5,7 @@ export default function AdminPage() {
     <AdminPanel
       lang="en"
       onForceRefresh={() => {}}
+      mode="admin"
     />
   );
 }

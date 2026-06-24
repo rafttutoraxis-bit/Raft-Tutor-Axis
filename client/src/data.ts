@@ -17,7 +17,7 @@ export const translationSet = {
     navJoinAsTeacher: "Join as Teacher",
     navSchoolSolutions: "School Solutions",
     navContact: "Contact",
-    navAdmin: "Admin Console",
+    navAdmin: "",
     aboutTitle: "India's Growing Teacher Network",
     aboutPara1: "Raft Tutor Axis is a trusted teacher-providing platform dedicated to connecting qualified educators with schools, institutes, and students across India.",
     aboutPara2: "Our mission is to make quality education accessible by providing skilled and verified teachers for academic institutions as well as personalized home tuition services.",
@@ -52,7 +52,7 @@ export const translationSet = {
     navJoinAsTeacher: "शिक्षक के रूप में जुड़ें",
     navSchoolSolutions: "स्कूल समाधान",
     navContact: "संपर्क करें",
-    navAdmin: "एडमिन डैशबोर्ड",
+    navAdmin: "",
     aboutTitle: "भारत का बढ़ता शिक्षक नेटवर्क",
     aboutPara1: "राफ्ट ट्यूटर एक्सिस एक विश्वसनीय शिक्षक-प्रदाता मंच है जो पूरे भारत में योग्य शिक्षकों को स्कूलों, संस्थानों और छात्रों से जोड़ने के लिए समर्पित है।",
     aboutPara2: "हमारा उद्देश्य शैक्षणिक संस्थानों के लिए कुशल और सत्यापित शिक्षक प्रदान करने के साथ-साथ व्यक्तिगत रूप से होम ट्यूशन सेवाएं प्रदान करके गुणवत्तापूर्ण शिक्षा को सुलभ बनाना है।",
@@ -169,7 +169,7 @@ export const dummyTestimonials = [
     rating: 5
   },
   {
-    text: "As a school administrator, finding high-quality PGT chemistry scholars is hard. Raft Tutor Axis provided vetted educators with excellent pedagogy skills.",
+    text: "As a school leadership representative, finding high-quality PGT chemistry scholars is hard. Raft Tutor Axis provided vetted educators with excellent pedagogy skills.",
     author: "A. K. Mishra",
     role: "Principal, Gyan Niketan School",
     rating: 5

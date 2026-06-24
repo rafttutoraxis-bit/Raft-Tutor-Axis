@@ -9,10 +9,20 @@ import ChatBot from "./components/ChatBot";
 import OnboardingFlow from "./components/OnboardingFlow";
 import Footer from "./components/Footer";
 
+// Context Hooks & Portals
+import { useAuth } from "./contexts/AuthContext";
+import { useSettings } from "./contexts/SettingsContext";
+import AdminPanel from "./components/AdminPanel";
+import TeacherDashboard from "./components/Teacher/TeacherDashboard";
+import ParentDashboard from "./components/Parent/ParentDashboard";
+import SchoolDashboard from "./components/School/SchoolDashboard";
+
 import { servicesData, whyChooseBenefits, founderCardsList, dummyTestimonials } from "./data";
 import { Language } from "./types";
 
 export default function App() {
+  const { user } = useAuth();
+  const { settings, loading: settingsLoading } = useSettings();
   const [lang, setLang] = useState<Language>("en");
   const [activeSection, setActiveSection] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -22,13 +32,20 @@ export default function App() {
 
   // Trigger onboarding on first visit based on session memory, and ensure dark mode is removed from document root
   useEffect(() => {
-    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("dark"); // Default to dynamic dark theme
     const hasVisited = localStorage.getItem("rta_visited_onboarding");
     if (!hasVisited) {
       setShowOnboarding(true);
       localStorage.setItem("rta_visited_onboarding", "true");
     }
   }, []);
+
+  // Redirect Admins away from the public landing page to the secure /admin route
+  useEffect(() => {
+    if (user && (user.role === "Super Admin" || user.role === "Operations Manager")) {
+      window.location.href = "/admin";
+    }
+  }, [user]);
 
   const toggleLanguage = (selectedLang: Language) => {
     setLang(selectedLang);
@@ -47,8 +64,46 @@ export default function App() {
     setSyncKey(prev => prev + 1);
   };
 
+  // Renders correct portal dashboard based on user role
+  const renderDashboardPortal = () => {
+    if (!user) {
+      return (
+        <AdminPanel 
+          lang={lang} 
+          onForceRefresh={triggerAdminRefresh} 
+          mode="user"
+        />
+      );
+    }
+
+    switch (user.role) {
+      case "Super Admin":
+      case "Operations Manager":
+        return (
+          <div className="py-20 flex flex-col items-center justify-center text-white">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#9bfc07] mb-4" />
+            <p className="text-xs font-mono">Redirecting to Secure Portal Workspace...</p>
+          </div>
+        );
+      case "Teacher":
+        return <TeacherDashboard />;
+      case "Parent":
+        return <ParentDashboard />;
+      case "School":
+        return <SchoolDashboard />;
+      default:
+        return (
+          <AdminPanel 
+            lang={lang} 
+            onForceRefresh={triggerAdminRefresh} 
+            mode="user"
+          />
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text transition-colors duration-300">
+    <div className="min-h-screen bg-[#110d22] text-white transition-colors duration-300">
       
       {/* Dynamic Interactive Guide overlay */}
       {showOnboarding && (
@@ -77,7 +132,7 @@ export default function App() {
       <Stats lang={lang} />
 
       {/* About Us Segment */}
-      <section className="py-20 bg-brand-logo-dark border-b border-[#9bfc07]/5" id="about">
+      <section className="py-20 bg-[#1b1631] border-b border-[#9bfc07]/5" id="about">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
             
@@ -91,11 +146,10 @@ export default function App() {
                 {lang === "en" ? "India's Growing Teacher Network" : "राफ्ट ट्यूटर एक्सिस - भारत का बढ़ता शिक्षक नेटवर्क"}
               </h2>
 
-              <div className="text-sm text-gray-300 leading-relaxed space-y-4">
+              <div className="text-sm text-gray-300 leading-relaxed space-y-4 font-mono text-zinc-300">
                 <p>{lang === "en" ? "Raft Tutor Axis is a trusted teacher-providing platform dedicated to connecting qualified educators with schools, institutes, and students across India." : "राफ्ट ट्यूटर एक्सिस एक विश्वसनीय शिक्षक-प्रदाता मंच है जो पूरे भारत में योग्य शिक्षकों को स्कूलों, संस्थानों और छात्रों से जोड़ने के लिए समर्पित है।"}</p>
                 <p>{lang === "en" ? "Our mission is to make quality education accessible by providing skilled and verified teachers for academic institutions as well as personalized home tuition services." : "हमारा उद्देश्य शैक्षणिक संस्थानों के लिए कुशल और सत्यापित शिक्षक प्रदान करने के साथ-साथ व्यक्तिगत रूप से होम ट्यूशन सेवाएं प्रदान करके गुणवत्तापूर्ण शिक्षा को सुलभ बनाना है।"}</p>
                 <p>{lang === "en" ? "With a strong presence across multiple states and cities, we have built a vast network of experienced educators to meet diverse learning needs." : "कई राज्यों और शहरों में मजबूत उपस्थिति के साथ, हमने विविध शिक्षण आवश्यकताओं को पूरा करने के लिए अनुभवी शिक्षकों का एक विशाल नेटवर्क बनाया है।"}</p>
-                <p>{lang === "en" ? "Whether you are a school seeking talented faculty, an institute looking for subject experts, or a parent searching for the right home tutor, Raft Tutor Axis provides reliable, efficient, and professional solutions tailored to your requirements." : "चाहे आप प्रतिभाशाली फैकल्टी की तलाश कर रहे स्कूल हों, विषय विशेषज्ञों की तलाश कर रहे संस्थान हों, या सही होम ट्यूटर की तलाश कर रहे माता-पिता हों, राफ्ट ट्यूटर एक्सिस आपकी आवश्यकताओं के अनुसार विश्वसनीय, कुशल और पेशेवर समाधान प्रदान करता है।"}</p>
               </div>
 
               <div className="border-l-4 border-[#9bfc07] pl-4 py-1 italic font-medium text-[#9bfc07] text-sm">
@@ -106,7 +160,7 @@ export default function App() {
             <div className="md:col-span-5 relative">
               <div className="aspect-square bg-[#110d22] rounded-2xl overflow-hidden shadow-2xl relative border border-[#9bfc07]/10">
                 <img 
-                  src="Tutoring.png?auto=format&fit=crop&q=80&w=600" 
+                  src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=600"
                   alt="Tutoring" 
                   className="w-full h-full object-cover opacity-90 filter brightness-90 transition-all duration-500 hover:scale-105"
                 />
@@ -131,7 +185,7 @@ export default function App() {
             <h2 className="font-display font-semibold text-3xl text-white mb-2 uppercase tracking-wide">
               {lang === "en" ? "Our Vast Educational Solutions" : "हमारी विस्तृत शैक्षणिक सेवाएं"}
             </h2>
-            <p className="text-xs text-gray-450 uppercase tracking-widest leading-relaxed">
+            <p className="text-xs text-zinc-450 uppercase tracking-widest leading-relaxed">
               {lang === "en" 
                 ? "Providing optimized localized matchmaking for private academic boards and public coaches."
                 : "निजी शैक्षणिक बोर्डों और सार्वजनिक कोचिंग संस्थानों के लिए स्थानीयकृत मिलान समाधान।"}
@@ -142,7 +196,7 @@ export default function App() {
             {servicesData.map(service => (
               <div
                 key={service.id}
-                className="bg-brand-logo-dark border border-[#9bfc07]/10 p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:border-[#9bfc07]/30 transition-all duration-300 flex flex-col justify-between"
+                className="bg-[#1b1631] border border-[#9bfc07]/10 p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:border-[#9bfc07]/30 transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <span className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-widest rounded-md bg-[#9bfc07]/10 text-[#9bfc07] mb-4 inline-block">
@@ -166,7 +220,7 @@ export default function App() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-16 bg-brand-logo-dark border-b border-[#9bfc07]/5" id="why-choose">
+      <section className="py-16 bg-[#1b1631] border-b border-[#9bfc07]/5" id="why-choose">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           
           <div className="text-center max-w-lg mx-auto mb-12">
@@ -190,7 +244,7 @@ export default function App() {
                 <h4 className="font-display font-semibold text-xs text-white mb-1 tracking-wide">
                   {benefit.title}
                 </h4>
-                <p className="text-[11px] text-gray-300 leading-relaxed">
+                <p className="text-[11px] text-gray-350 leading-relaxed">
                   {benefit.desc}
                 </p>
               </div>
@@ -214,7 +268,7 @@ export default function App() {
             <h2 className="font-display font-semibold text-2xl text-white mb-2 uppercase tracking-wider">
               Meet Our Visionaries
             </h2>
-            <p className="text-[10px] text-gray-450 uppercase tracking-widest font-mono">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">
               The force guiding strategic tutoring placement and operations in North India.
             </p>
           </div>
@@ -223,16 +277,16 @@ export default function App() {
             {founderCardsList.map(founder => (
               <div 
                 key={founder.name}
-                className="bg-brand-logo-dark border border-[#9bfc07]/10 rounded-2xl overflow-hidden shadow-lg flex flex-col hover:shadow-2xl hover:border-[#9bfc07]/30 transition-all duration-300"
+                className="bg-[#1b1631] border border-[#9bfc07]/10 rounded-2xl overflow-hidden shadow-lg flex flex-col hover:shadow-2xl hover:border-[#9bfc07]/30 transition-all duration-300"
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img
-                   src={founder.image}
-                   alt={founder.name}
-                   referrerPolicy="no-referrer"
+                    src={founder.image.startsWith("http") ? founder.image : `https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400`}
+                    alt={founder.name}
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
                   />
-                  <div className="absolute bottom-4 left-4 bg-brand-logo-dark/90 px-3 py-1.5 text-[10px] uppercase font-mono tracking-widest text-[#9bfc07] rounded-md border border-[#9bfc07]/20">
+                  <div className="absolute bottom-4 left-4 bg-[#1b1631]/90 px-3 py-1.5 text-[10px] uppercase font-mono tracking-widest text-[#9bfc07] rounded-md border border-[#9bfc07]/20">
                     {founder.role}
                   </div>
                 </div>
@@ -253,7 +307,7 @@ export default function App() {
       </section>
 
       {/* Sliding Testimonials slider */}
-      <section className="py-16 bg-brand-logo-dark" id="testimonials">
+      <section className="py-16 bg-[#1b1631]" id="testimonials">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           
           <h2 className="font-display font-semibold text-2xl text-white mb-10 uppercase tracking-wider">
@@ -284,6 +338,17 @@ export default function App() {
 
         </div>
       </section>
+
+      {/* Unified Portal Workspace Console (Teacher, Parent, School) */}
+      {user && (
+        <section className="py-16 bg-[#110d22]/90 border-t border-[#9bfc07]/10" id="portal-workspace-console">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div key={syncKey}>
+              {renderDashboardPortal()}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Consolidated Footer detailing contacts and Maps */}
       <Footer 

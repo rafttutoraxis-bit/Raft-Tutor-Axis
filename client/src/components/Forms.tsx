@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { User, Phone, Mail, MapPin, GraduationCap, Briefcase, BookOpen, Layers, IndianRupee, FileText, Camera, CheckCircle2, AlertCircle, Sparkles, Building, Send, QrCode, Shield, RefreshCw } from "lucide-react";
 import { API_URL } from "../config";
+import { useSettings } from "../contexts/SettingsContext";
+import Card from "./UI/Card";
+import Button from "./UI/Button";
 
 interface FormsProps {
   lang: "en" | "hi";
@@ -8,6 +11,7 @@ interface FormsProps {
 }
 
 export default function Forms({ lang, onNewRegistration }: FormsProps) {
+  const { settings } = useSettings();
   const [activeForm, setActiveForm] = useState<"parent" | "teacher" | "school">("parent");
 
   // Parent form state
@@ -54,8 +58,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({ type: null, message: "" });
   const [loading, setLoading] = useState(false);
+  
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState("");
 
   // Payment gateway states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -63,6 +70,12 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
   const [upiTxnId, setUpiTxnId] = useState("");
   const [isPaying, setIsPaying] = useState(false);
   const [paySuccess, setPaySuccess] = useState(false);
+
+  const getFullUrl = (path: string) => {
+    if (!path) return "";
+    if (path.startsWith("http") || path.startsWith("data:")) return path;
+    return `${API_URL}${path}`;
+  };
 
   // File processors
   const handlePhotoLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +98,27 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
     }
   };
 
+  const handleScreenshotLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleParentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check dynamic setting toggles
+    if (!settings.enableRegistration) {
+      setStatus({ type: "error", message: "Registrations are currently closed." });
+      return;
+    }
+
     if (
       !parentData.name ||
       !parentData.mobile ||
@@ -112,8 +144,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         setStatus({
           type: "success",
           message: lang === "en" 
-            ? "Your request has been filed successfully! We sent a simulation email. We will map a tutor in 24 hrs." 
-            : "आपका अनुरोध सफलतापूर्वक दर्ज कर लिया गया है! आपको एक पुष्टिकरण ईमेल भी भेजा गया है।"
+            ? "Your request has been filed successfully! We will map a tutor in 24 hrs." 
+            : "आपका अनुरोध सफलतापूर्वक दर्ज कर लिया गया है! हम 24 घंटे में ट्यूटर असाइन करेंगे।"
         });
         setParentData({
           name: "",
@@ -140,6 +172,12 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
   const handleTeacherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!settings.enableRegistration) {
+      setStatus({ type: "error", message: "Registrations are currently closed." });
+      return;
+    }
+
     if (
       !teacherData.name ||
       !teacherData.mobile ||
@@ -184,6 +222,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       });
       if (resumeFile) formData.append("resume", resumeFile);
       if (photoFile) formData.append("photo", photoFile);
+      if (screenshotFile) formData.append("screenshot", screenshotFile);
 
       formData.append("paymentStatus", isPaid ? "Paid" : "Pending");
       formData.append("txnId", txnIdToSave);
@@ -196,8 +235,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         setStatus({
           type: "success",
           message: isPaid
-            ? `Payment verified! Registered successfully under Transaction ID ${txnIdToSave}. Our Academic Operations Head will contact you for verification shortly.`
-            : "Registered successfully (Registration Fee ₹149 Pending)! Our Academic Operations Head will contact you for verification shortly."
+            ? `Payment verified! Registered successfully under Transaction ID ${txnIdToSave}. Our coordinator desk will contact you shortly.`
+            : `Registered successfully (Registration Fee ₹${settings.registrationFee} Pending)! Our coordinator desk will contact you once verified.`
         });
         setTeacherData({
           name: "",
@@ -217,10 +256,13 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         });
         setResumeFile(null);
         setPhotoFile(null);
+        setScreenshotFile(null);
+        setScreenshotPreview("");
         setUpiTxnId("");
         if (onNewRegistration) onNewRegistration();
       } else {
-        throw new Error();
+        const err = await response.json();
+        setStatus({ type: "error", message: err.error || "Failed to reach registration engine." });
       }
     } catch {
       setStatus({ type: "error", message: "Failed to reach registration engine." });
@@ -233,6 +275,12 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
   const handleSchoolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!settings.enableRegistration) {
+      setStatus({ type: "error", message: "Registrations are currently closed." });
+      return;
+    }
+
     if (
       !schoolData.orgName ||
       !schoolData.contactPerson ||
@@ -282,13 +330,13 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Navigation Selector */}
-        <div className="text-center mb-10">
-          <div className="inline-flex bg-brand-logo-dark p-1 rounded-xl shadow-inner border border-[#9bfc07]/15">
+        <div className="text-center mb-10 select-none">
+          <div className="inline-flex bg-[#1b1631] p-1.5 rounded-xl shadow-inner border border-[#9bfc07]/15">
             <button
               onClick={() => { setActiveForm("parent"); setStatus({ type: null, message: "" }); }}
               className={`px-5 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                 activeForm === "parent"
-                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 scale-102 font-bold"
+                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 font-bold"
                   : "text-gray-300 hover:text-[#9bfc07]"
               }`}
             >
@@ -298,7 +346,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               onClick={() => { setActiveForm("teacher"); setStatus({ type: null, message: "" }); }}
               className={`px-5 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                 activeForm === "teacher"
-                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 scale-102 font-bold"
+                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 font-bold"
                   : "text-gray-300 hover:text-[#9bfc07]"
               }`}
             >
@@ -308,7 +356,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               onClick={() => { setActiveForm("school"); setStatus({ type: null, message: "" }); }}
               className={`px-5 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                 activeForm === "school"
-                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 scale-102 font-bold"
+                  ? "bg-[#9bfc07] text-[#1b1631] shadow-md shadow-[#9bfc07]/20 font-bold"
                   : "text-gray-300 hover:text-[#9bfc07]"
               }`}
             >
@@ -321,8 +369,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         {status.type && (
           <div className={`p-4 rounded-xl mb-8 flex items-start gap-3 border animate-fade-in ${
             status.type === "success" 
-              ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" 
-              : "bg-rose-50 dark:bg-rose-950/20 text-rose-800 dark:text-rose-400 border-rose-200 dark:border-rose-900"
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+              : "bg-rose-500/10 text-rose-400 border-rose-500/30"
           }`}>
             {status.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
             <span className="text-xs font-medium leading-normal">{status.message}</span>
@@ -338,16 +386,16 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
           {/* Parent Registration Form */}
           {activeForm === "parent" && (
             <form onSubmit={handleParentSubmit} className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-[#9bfc07]" />
-                <h3 className="font-display font-semibold text-lg text-white">
+              <div className="flex items-center gap-2 mb-4 select-none">
+                <Sparkles className="w-5 h-5 text-[#9bfc07] animate-pulse" />
+                <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">
                   {lang === "en" ? "Home Tuition Request Wizard" : "ट्यूटर अनुरोध केंद्र"}
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Parent Name" : "अभिभावक का नाम"} <span className="text-red-500">*</span></label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-white text-xs">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Parent Name" : "अभिभावक का नाम"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -355,14 +403,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.name}
                       onChange={e => setParentData({ ...parentData, name: e.target.value })}
                       placeholder="e.g. Ramesh Singh"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Mobile Number" : "मोबाइल नंबर"} <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Mobile Number" : "मोबाइल नंबर"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -370,14 +418,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.mobile}
                       onChange={e => setParentData({ ...parentData, mobile: e.target.value })}
                       placeholder="10 digit number"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Email Address" : "ईमेल खाता"} <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Email Address" : "ईमेल खाता"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -385,14 +433,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.email}
                       onChange={e => setParentData({ ...parentData, email: e.target.value })}
                       placeholder="e.g. parent@gmail.com"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "City Location" : "शहर का नाम"} <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "City Location" : "शहर का नाम"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -400,14 +448,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.city}
                       onChange={e => setParentData({ ...parentData, city: e.target.value })}
                       placeholder="e.g. Vadodara or Surat"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Student Class" : "कक्षा"} <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Student Class" : "कक्षा"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Layers className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -415,27 +463,27 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.studentClass}
                       onChange={e => setParentData({ ...parentData, studentClass: e.target.value })}
                       placeholder="e.g. Class 10th or Class 12th"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Educational Board" : "बोर्ड"}</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Educational Board" : "बोर्ड"}</label>
                   <select
                     value={parentData.board}
                     onChange={e => setParentData({ ...parentData, board: e.target.value as any })}
-                    className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white px-3.5 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                    className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                   >
                     <option value="CBSE">CBSE Board</option>
                     <option value="ICSE">ICSE Board</option>
-                    <option value="State Board">State Board (Bihar & Others)</option>
+                    <option value="State Board">State Board</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Subjects Required" : "आवश्यक विषय"} <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Subjects Required" : "आवश्यक विषय"} <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <BookOpen className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -443,18 +491,18 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={parentData.subjects}
                       onChange={e => setParentData({ ...parentData, subjects: e.target.value })}
                       placeholder="e.g. Physics, Chemistry, Maths"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Tuition Mode" : "ट्यूशन मोड"}</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Tuition Mode" : "ट्यूशन मोड"}</label>
                   <select
                     value={parentData.mode}
                     onChange={e => setParentData({ ...parentData, mode: e.target.value as any })}
-                    className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white px-3.5 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all"
+                    className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                   >
                     <option value="Home">{lang === "en" ? "Home Tuition (Offline)" : "होम ट्यूशन (ऑफलाइन)"}</option>
                     <option value="Online">{lang === "en" ? "Online Live Class" : "ऑनलाइन लाइव क्लास"}</option>
@@ -462,30 +510,30 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Full Physical Address" : "पूरा पता"} <span className="text-red-500">*</span></label>
+              <div className="space-y-1.5 text-white text-xs">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Full Physical Address" : "पूरा पता"} <span className="text-red-500">*</span></label>
                 <textarea
                   value={parentData.address}
                   onChange={e => setParentData({ ...parentData, address: e.target.value })}
-                  placeholder="e.g. Vrindavan Chokdi near DMart, House No. 25, Vadodara"
-                  className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white p-3.5 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all h-20 resize-none"
+                  placeholder="e.g. Vrindavan Chokdi, House No. 25, Vadodara"
+                  className="w-full bg-[#110d22] p-3.5 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none h-20 resize-none"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">{lang === "en" ? "Additional Instruction / Messages" : "अन्य विवरण"}</label>
+              <div className="space-y-1.5 text-white text-xs">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Additional Messages" : "अन्य विवरण"}</label>
                 <textarea
                   value={parentData.message}
                   onChange={e => setParentData({ ...parentData, message: e.target.value })}
                   placeholder="Tell us student weak areas or teacher timing preferences..."
-                  className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white p-3.5 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary transition-all h-20 resize-none"
+                  className="w-full bg-[#110d22] p-3.5 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none h-20 resize-none"
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 p-3.5 bg-[#9bfc07]/10 rounded-xl border border-[#9bfc07]/20 text-xs text-[#9bfc07]">
+              <div className="flex items-center gap-1.5 p-3.5 bg-[#9bfc07]/10 rounded-xl border border-[#9bfc07]/20 text-xs text-[#9bfc07] font-mono select-none">
                 <Sparkles className="w-4 h-4 animate-pulse shrink-0" />
-                <span><strong>2 DAYS FREE DEMO:</strong> We will map a verified tutor for a two-day trial completely free. No advance fees required!</span>
+                <span><strong>{settings.freeDemoBadge || "2 DAYS FREE DEMO"}:</strong> We will map a verified tutor for a two-day trial completely free. No advance fees required!</span>
               </div>
 
               <button
@@ -501,17 +549,17 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
           {/* Teacher Applicant Form */}
           {activeForm === "teacher" && (
-            <form onSubmit={handleTeacherSubmit} className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <GraduationCap className="w-5 h-5 text-brand-primary" />
-                <h3 className="font-display font-semibold text-lg text-gray-900 dark:text-white">
+            <form onSubmit={handleTeacherSubmit} className="space-y-6 text-white text-xs">
+              <div className="flex items-center gap-2 mb-4 select-none">
+                <GraduationCap className="w-5 h-5 text-[#9bfc07]" />
+                <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">
                   Join India's Vetted Educator Network
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Teacher Full Name *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teacher Full Name *</label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -519,14 +567,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={teacherData.name}
                       onChange={e => setTeacherData({ ...teacherData, name: e.target.value })}
                       placeholder="e.g. Dr. PK Singh"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Contact Number *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Number *</label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -534,14 +582,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={teacherData.mobile}
                       onChange={e => setTeacherData({ ...teacherData, mobile: e.target.value })}
                       placeholder="e.g. 98765 43210"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Email Address *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address *</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -549,18 +597,18 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={teacherData.email}
                       onChange={e => setTeacherData({ ...teacherData, email: e.target.value })}
                       placeholder="email@domain.com"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Gender Selection</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Gender Selection</label>
                   <select
                     value={teacherData.gender}
                     onChange={e => setTeacherData({ ...teacherData, gender: e.target.value as any })}
-                    className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white px-3.5 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                    className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -568,101 +616,101 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Highest Qualification *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Highest Qualification *</label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.qualification}
                       onChange={e => setTeacherData({ ...teacherData, qualification: e.target.value })}
-                      placeholder="e.g. M.Sc Chemistry or B.Ed / B.Tech"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. M.Sc Chemistry"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Teaching Experience *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Experience *</label>
                   <div className="relative">
                     <Briefcase className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.experience}
                       onChange={e => setTeacherData({ ...teacherData, experience: e.target.value })}
-                      placeholder="e.g. 5 Years / 3 Years in coaching"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. 5 Years in CBSE School"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">City Availability *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">City Availability *</label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.city}
                       onChange={e => setTeacherData({ ...teacherData, city: e.target.value })}
-                      placeholder="e.g. Vadodara, Surat, etc."
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. Vadodara"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Expected Monthly Fees / Salary</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Expected Monthly Salary</label>
                   <div className="relative">
                     <IndianRupee className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.expectedFees}
                       onChange={e => setTeacherData({ ...teacherData, expectedFees: e.target.value })}
-                      placeholder="e.g. 5,000 / month"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. 15,000 / month"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Specialist Subjects *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Specialist Subjects *</label>
                   <div className="relative">
                     <BookOpen className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.subjects}
                       onChange={e => setTeacherData({ ...teacherData, subjects: e.target.value })}
-                      placeholder="e.g. Mathematics, JEE Physics"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. Mathematics, Physics"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Classes you teach *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Classes you teach *</label>
                   <div className="relative">
                     <Layers className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       value={teacherData.classes}
                       onChange={e => setTeacherData({ ...teacherData, classes: e.target.value })}
-                      placeholder="e.g. Class 9 to 12, PGT level"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      placeholder="e.g. Class 9 to 12"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Preferred Mode</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Preferred Mode</label>
                   <select
                     value={teacherData.mode}
                     onChange={e => setTeacherData({ ...teacherData, mode: e.target.value as any })}
-                    className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white px-3.5 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                    className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                   >
                     <option value="Home">Home Tuition (Physical)</option>
                     <option value="Online">Online Sessions only</option>
@@ -670,57 +718,68 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   </select>
                 </div>
 
-                <div>
-                  {/* CV Loader */}
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Upload Biodata / Resume *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Upload Biodata / Resume *</label>
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-brand-primary px-3 py-2.5 rounded-lg flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300 font-medium select-none">
-                      <FileText className="w-3.5 h-3.5 text-brand-primary" />
+                    <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
+                      <FileText className="w-3.5 h-3.5 text-[#9bfc07]" />
                       <span>Choose PDF/DOC</span>
                       <input type="file" accept=".pdf,.doc,.docx" onChange={handleResumeLoad} className="hidden" />
                     </label>
-                    <span className="text-[10px] text-gray-500 truncate max-w-[120px]">
-                      {teacherData.resumeUrl ? "✓ Loaded Successfully" : "No file selected"}
+                    <span className="text-[9px] text-zinc-500 truncate max-w-[125px]">
+                      {resumeFile ? `✓ ${resumeFile.name}` : "No CV uploaded"}
                     </span>
                   </div>
                 </div>
 
-                <div>
-                  {/* Photo Loader */}
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Professional Headshot</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Professional Headshot</label>
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-brand-primary px-3 py-2.5 rounded-lg flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-300 font-medium select-none">
-                      <Camera className="w-3.5 h-3.5 text-brand-primary" />
-                      <span>Choose JPEG/PNG</span>
+                    <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
+                      <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />
+                      <span>Choose Image</span>
                       <input type="file" accept="image/*" onChange={handlePhotoLoad} className="hidden" />
                     </label>
-                    {teacherData.photoUrl ? (
-                      <img src={teacherData.photoUrl} className="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0" />
+                    {photoFile ? (
+                      <img src={teacherData.photoUrl} className="w-9 h-9 rounded-full object-cover border border-[#9bfc07]/25 shrink-0" />
                     ) : (
-                      <span className="text-[10px] text-gray-500">No image loaded</span>
+                      <span className="text-[9px] text-zinc-500">No image loaded</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Payment screenshot receipt</label>
+                  <div className="flex items-center gap-3">
+                    <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
+                      <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />
+                      <span>Choose Image</span>
+                      <input type="file" accept="image/*" onChange={handleScreenshotLoad} className="hidden" />
+                    </label>
+                    {screenshotFile ? (
+                      <img src={screenshotPreview} className="w-9 h-9 rounded object-cover border border-[#9bfc07]/25 shrink-0" />
+                    ) : (
+                      <span className="text-[9px] text-zinc-500">No screenshot loaded</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Address *</label>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address *</label>
                 <textarea
                   value={teacherData.address}
                   onChange={e => setTeacherData({ ...teacherData, address: e.target.value })}
                   placeholder="Street name, Sector, Landmark, Town details"
-                  className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white p-3.5 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary h-20 resize-none"
+                  className="w-full bg-[#110d22] p-3.5 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none h-20 resize-none"
                   required
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 p-3.5 bg-[#9bfc07]/10 rounded-xl border border-[#9bfc07]/20 text-xs text-[#9bfc07]">
+              <div className="flex items-center gap-1.5 p-3.5 bg-[#9bfc07]/10 rounded-xl border border-[#9bfc07]/20 text-xs text-[#9bfc07] font-mono select-none">
                 <Sparkles className="w-4 h-4 animate-pulse shrink-0" />
                 <span>
-                  <strong>{lang === "en" ? "REGISTRATION FEE:" : "पंजीकरण शुल्क:"}</strong>{" "}
-                  {lang === "en" 
-                    ? "A one-time verification and registration fee of ₹149 applies to join India's Vetted Educator Network." 
-                    : "शिक्षक नेटवर्क में शामिल होने के लिए ₹149 का एकमुश्त सत्यापन और पंजीकरण शुल्क लागू होता है।"}
+                  <strong>ONE-TIME REGISTRATION FEE:</strong> A verified member fee of ₹{settings.registrationFee} applies to activate your RTA profile on the platform.
                 </span>
               </div>
 
@@ -737,17 +796,17 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
           {/* School Solutions Form */}
           {activeForm === "school" && (
-            <form onSubmit={handleSchoolSubmit} className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
+            <form onSubmit={handleSchoolSubmit} className="space-y-6 text-white text-xs">
+              <div className="flex items-center gap-2 mb-4 select-none">
                 <Building className="w-5 h-5 text-[#9bfc07]" />
-                <h3 className="font-display font-semibold text-lg text-white">
+                <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">
                   School & Coaching Institute Faculty Inquiries
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Organization / School Name *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Organization / School Name *</label>
                   <div className="relative">
                     <Building className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -755,14 +814,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={schoolData.orgName}
                       onChange={e => setSchoolData({ ...schoolData, orgName: e.target.value })}
                       placeholder="e.g. Gyan Niketan Senior School"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Contact Person *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Person *</label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -770,14 +829,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={schoolData.contactPerson}
                       onChange={e => setSchoolData({ ...schoolData, contactPerson: e.target.value })}
                       placeholder="e.g. Ramesh Prasad (Principal)"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Inquiry Phone *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Inquiry Phone *</label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -785,14 +844,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={schoolData.phone}
                       onChange={e => setSchoolData({ ...schoolData, phone: e.target.value })}
                       placeholder="Contact number"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Email *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email *</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -800,15 +859,15 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       value={schoolData.email}
                       onChange={e => setSchoolData({ ...schoolData, email: e.target.value })}
                       placeholder="e.g. contact@school.edu"
-                      className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                      className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                       required
                     />
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Physical Location / Town *</label>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Location / Town *</label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                   <input
@@ -816,19 +875,19 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     value={schoolData.location}
                     onChange={e => setSchoolData({ ...schoolData, location: e.target.value })}
                     placeholder="e.g. Vadodara, Gujarat"
-                    className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary"
+                    className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-1.5">Faculty Requirement Specifications *</label>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Faculty Requirement Specifications *</label>
                 <textarea
                   value={schoolData.details}
                   onChange={e => setSchoolData({ ...schoolData, details: e.target.value })}
                   placeholder="Identify PGT/TGT subject vacancies, salary slabs, teacher eligibility criteria..."
-                  className="w-full bg-white dark:bg-[#0c121a] text-xs text-gray-800 dark:text-white p-3.5 rounded-xl border border-gray-200 dark:border-gray-850 outline-none focus:border-brand-primary h-24 resize-none"
+                  className="w-full bg-[#110d22] p-3.5 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none h-24 resize-none"
                   required
                 />
               </div>
@@ -848,7 +907,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
           </div>
 
           {/* Sidebar Column */}
-          <aside className="lg:col-span-4 space-y-6 flex flex-col">
+          <aside className="lg:col-span-4 space-y-6 flex flex-col select-none">
             
             {/* Guarantee Callout */}
             <div className="bg-[#1b1631] border border-[#9bfc07]/15 p-6 rounded-2xl shadow-sm space-y-4">
@@ -881,7 +940,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
             <div className="bg-[#9bfc07]/5 border border-[#9bfc07]/20 p-5 rounded-2xl relative overflow-hidden">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{lang === "en" ? "RTA Operational Desk" : "समर्पित समन्वयक डेस्क"}</p>
               <p className="text-base font-black text-[#9bfc07] mt-1">
-                +91 62053 55760
+                {settings.supportPhone}
               </p>
               <p className="text-[9px] text-gray-400 italic mt-1 leading-none">
                 {lang === "en" ? "* Call us for instant tutor mapping assistance" : "* तत्काल ट्यूटर सहायता और सिफारिश के लिए कॉल करें"}
@@ -895,8 +954,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
       {/* Premium secure payment overlay modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-[#1b1631] border border-[#9bfc07]/25 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-white space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in text-white font-sans">
+          <Card variant="gradient" hoverable={false} className="max-w-md w-full p-6 sm:p-8 space-y-6">
             <div className="text-center relative">
               <div className="mx-auto w-12 h-12 bg-[#9bfc07]/10 border border-[#9bfc07]/30 rounded-full flex items-center justify-center text-[#9bfc07] mb-3.5">
                 <Shield className="w-6 h-6 animate-pulse" />
@@ -909,18 +968,18 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </p>
             </div>
 
-            <div className="bg-[#110d22] border border-[#9bfc07]/10 p-4 rounded-xl space-y-2">
-              <div className="flex justify-between text-xs text-zinc-400">
+            <div className="bg-[#110d22] border border-[#9bfc07]/10 p-4 rounded-xl space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-450">
                 <span>Account Tier</span>
                 <span className="font-bold text-white">Vetted Network Member</span>
               </div>
-              <div className="flex justify-between text-xs text-zinc-400">
-                <span>Verification & Registration Fee</span>
-                <span className="font-bold text-white">₹149.00</span>
+              <div className="flex justify-between text-zinc-450">
+                <span>Verification Fee</span>
+                <span className="font-bold text-white">₹{settings.registrationFee}.00</span>
               </div>
               <div className="border-t border-[#9bfc07]/10 pt-2 flex justify-between text-sm font-semibold">
                 <span className="text-[#9bfc07]">Total Due Amount</span>
-                <span className="text-[#9bfc07]">₹149.00</span>
+                <span className="text-[#9bfc07]">₹{settings.registrationFee}.00</span>
               </div>
             </div>
 
@@ -952,20 +1011,21 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
             {paymentMethod === "qr" && (
               <div className="space-y-4 text-center">
                 <p className="text-[10px] text-zinc-400">
-                  Scan this QR code using any UPI app (GPay, PhonePe, Paytm, BHIM) to make the ₹149 payment.
+                  Scan this QR code using GPay, PhonePe, Paytm, or BHIM to pay ₹{settings.registrationFee}.
                 </p>
                 
-                {/* Simulated QR Code CSS mockup */}
+                {/* Dynamically uploaded settings QR Code support */}
                 <div className="mx-auto w-36 h-36 bg-white p-2.5 rounded-xl flex flex-col items-center justify-center relative overflow-hidden border-2 border-[#9bfc07]/20 select-none shadow-md">
-                  <div className="w-full h-full bg-[#110d22] rounded flex flex-col items-center justify-center text-[10px] font-mono text-[#9bfc07] font-bold gap-1 border border-[#9bfc07]/30">
-                    <QrCode className="w-10 h-10 stroke-1" />
-                    <span>RTA-PAY-₹149</span>
-                  </div>
+                  <img
+                    src={settings.qrCodeUrl ? getFullUrl(settings.qrCodeUrl) : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${settings.upiId || "6205355760-3@ybl"}&pn=Raft%20Tutor%20Axis&am=${settings.registrationFee || 149}&cu=INR`)}`}
+                    className="w-full h-full object-contain"
+                    alt="Payment QR"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#9bfc07]/10 to-transparent w-full h-full pointer-events-none animate-scan" style={{ animationDuration: '3s', animationIterationCount: 'infinite' }} />
                 </div>
 
                 <div className="text-[10px] font-mono text-zinc-400">
-                  UPI ID: <span className="text-[#9bfc07] font-bold select-all font-mono">rafttutoraxis@upi</span>
+                  UPI ID: <span className="text-[#9bfc07] font-bold select-all font-mono">{settings.upiId}</span>
                 </div>
 
                 <div className="space-y-2 text-left">
@@ -980,11 +1040,33 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   />
                 </div>
 
+                {screenshotFile ? (
+                  <p className="text-[10px] text-emerald-400 font-mono text-left">
+                    ✓ Payment screenshot receipt loaded: {screenshotFile.name}
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 text-left">
+                    <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">Payment Screenshot Receipt *</label>
+                    <div className="flex items-center gap-3">
+                      <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3.5 py-2 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
+                        <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />
+                        <span>Upload Screenshot</span>
+                        <input type="file" accept="image/*" onChange={handleScreenshotLoad} className="hidden" />
+                      </label>
+                      <span className="text-[9px] text-zinc-500">Compulsory screenshot receipt</span>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
                     if (upiTxnId.length !== 12) {
                       alert("Please enter a valid 12-digit UPI Transaction ID.");
+                      return;
+                    }
+                    if (!screenshotFile) {
+                      alert("Please upload your UPI payment screenshot receipt.");
                       return;
                     }
                     executeTeacherSubmit(true, upiTxnId);
@@ -1000,7 +1082,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
             {paymentMethod === "express" && (
               <div className="space-y-4">
                 <p className="text-[10px] text-zinc-400 text-center">
-                  Select your UPI app for instant automated checkout and approval.
+                  Select your UPI app for automated checkout.
                 </p>
 
                 {isPaying ? (
@@ -1020,7 +1102,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     <button
                       type="button"
                       onClick={() => handleExpressPay("GPay")}
-                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                      className="py-3 px-4 border border-zinc-800 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
                     >
                       <span className="text-sm">🔵</span>
                       <span>Google Pay</span>
@@ -1028,7 +1110,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     <button
                       type="button"
                       onClick={() => handleExpressPay("PhonePe")}
-                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                      className="py-3 px-4 border border-zinc-800 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
                     >
                       <span className="text-sm">🟣</span>
                       <span>PhonePe</span>
@@ -1036,7 +1118,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     <button
                       type="button"
                       onClick={() => handleExpressPay("Paytm")}
-                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                      className="py-3 px-4 border border-zinc-800 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
                     >
                       <span className="text-sm">🔷</span>
                       <span>Paytm UPI</span>
@@ -1044,7 +1126,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     <button
                       type="button"
                       onClick={() => handleExpressPay("BHIM")}
-                      className="py-3 px-4 border border-zinc-700 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
+                      className="py-3 px-4 border border-zinc-800 hover:border-[#9bfc07] bg-[#110d22]/50 hover:bg-[#110d22] rounded-xl text-xs font-semibold flex flex-col items-center gap-2 cursor-pointer transition-all hover:scale-103 text-center"
                     >
                       <span className="text-sm">🇮🇳</span>
                       <span>BHIM UPI</span>
@@ -1055,7 +1137,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
             )}
 
             {!isPaying && !paySuccess && (
-              <div className="flex gap-3.5 pt-3 border-t border-[#9bfc07]/10">
+              <div className="flex gap-3.5 pt-3 border-t border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setShowPaymentModal(false)}
@@ -1073,7 +1155,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </button>
               </div>
             )}
-          </div>
+          </Card>
         </div>
       )}
 

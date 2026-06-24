@@ -30,8 +30,8 @@ export default function Footer({ lang, onNavigate }: FooterProps) {
             <Logo lang={lang} />
             <p className="text-sm text-gray-300 leading-relaxed font-sans">
               {lang === "en" 
-                ? "North India's elite and most trusted educational teacher providing platform. Bridging certified subject educators, school administrators, and students with absolute verification guarantees."
-                : "उत्तर भारत का संभ्रांत और सबसे भरोसेमंद शिक्षक प्रदाता मंच। पूर्ण सत्यापन गारंटी के साथ प्रमाणित विषय शिक्षकों, स्कूल प्रशासकों और छात्रों को जोड़ता है।"}
+                ? "North India's elite and most trusted educational teacher providing platform. Bridging certified subject educators, school leadership teams, and students with absolute verification guarantees."
+                : "उत्तर भारत का संभ्रांत और सबसे भरोसेमंद शिक्षक प्रदाता मंच। पूर्ण सत्यापन गारंटी के साथ प्रमाणित विषय शिक्षकों, स्कूल नेतृत्व, और छात्रों को जोड़ता है।"}
             </p>
           </div>
 
