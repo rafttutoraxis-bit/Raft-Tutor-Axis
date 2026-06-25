@@ -18,6 +18,7 @@ import {
   Vacancy,
   SystemSettings,
   User,
+  Otp,
 } from "./models.js";
 
 import {
@@ -46,6 +47,7 @@ import {
   notifyForgotPassword,
   notifyTutorAssigned,
   notifySchoolVacancyPosted,
+  sendEmailNotification,
 } from "./services/notifications.js";
 
 import { seedInitialAdmin } from "./seed.js";
@@ -252,6 +254,52 @@ app.post(
     }
   }
 );
+const verifyOtpCode = async (email: string, otp: string): Promise<boolean> => {
+  const emailLower = String(email).trim().toLowerCase();
+  const record = await Otp.findOne({ email: emailLower });
+  if (record && record.otp === String(otp).trim()) {
+    await Otp.deleteOne({ email: emailLower });
+    return true;
+  }
+  return false;
+};
+
+app.post("/api/auth/send-otp", rateLimiter(10, 60000), async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: "A valid email address is required." });
+    }
+
+    const emailLower = String(email).trim().toLowerCase();
+
+    // Check if user account already exists in database
+    const userExists = await User.findOne({ email: emailLower });
+    if (userExists) {
+      return res.status(409).json({ error: "Email is already registered." });
+    }
+
+    // Generate 6-digit numeric OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Upsert OTP
+    await Otp.findOneAndUpdate(
+      { email: emailLower },
+      { otp: otpCode, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    // Send email with OTP
+    const subject = "Verify your email - Raft Tutor Axis";
+    const body = `Your email verification OTP code is: ${otpCode}\nThis code is valid for 5 minutes.`;
+    await sendEmailNotification(emailLower, subject, body);
+
+    res.json({ success: true, message: "OTP verification code has been dispatched to your email." });
+  } catch (error) {
+    console.error("Failed to send OTP:", error);
+    res.status(500).json({ error: "Failed to dispatch verification email." });
+  }
+});
 
 // Unified Authentication Register Route
 app.post("/api/auth/register", rateLimiter(5, 60000), async (req, res) => {
@@ -550,20 +598,74 @@ app.get("/api/data", requireAuth, requireRole(["Super Admin", "Operations Manage
 // Parent Registration
 app.post("/api/parent-registration", async (req, res) => {
   try {
-    if (!req.body.email || !isValidEmail(req.body.email)) {
+    const { name, email, password, otp } = req.body;
+    if (!email || !isValidEmail(email)) {
       return res.status(400).json({ error: "A valid email address is required." });
     }
+    if (!password || !isStrongPassword(password)) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long." });
+    }
+    if (!otp) {
+      return res.status(400).json({ error: "OTP code is required." });
+    }
+
+    // Verify OTP
+    const isOtpValid = await verifyOtpCode(email, otp);
+    if (!isOtpValid) {
+      return res.status(400).json({ error: "Invalid or expired OTP code." });
+    }
+
+    // Check if user already exists
+    const emailLower = String(email).trim().toLowerCase();
+    const existingUser = await User.findOne({ email: emailLower });
+    if (existingUser) {
+      return res.status(409).json({ error: "Email is already registered." });
+    }
+
+    // Create inquiry profile
     const record = await ParentInquiry.create(req.body);
+
+    // Create user login account
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({
+      name,
+      email: emailLower,
+      passwordHash,
+      role: "Parent",
+      refId: record._id,
+      refModel: "ParentInquiry",
+    });
+
+    const authUser = {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      refId: user.refId?.toString(),
+    };
+    const token = signAccessToken(authUser);
+    const refreshToken = signRefreshToken(authUser);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
     await logAction(
       "Parent / Student Visitor",
-      `New Tutor Request submitted by ${record.name} for Class ${record.studentClass}`,
+      `New Tutor Request and User Account registered by ${record.name} for Class ${record.studentClass}`,
       req.ip
     );
     await notifyParentRegistered(record.email, record.name, record.studentClass, record.mobile);
-    res.json({ success: true, record: normalizeRecord(record) });
+
+    res.status(201).json({
+      success: true,
+      token,
+      refreshToken,
+      user: authUser,
+      record: normalizeRecord(record),
+    });
   } catch (error) {
     console.error("Parent registration failed:", error);
-    res.status(400).json({ error: "Failed to log parent inquiry" });
+    res.status(400).json({ error: "Failed to verify or complete parent inquiry registration" });
   }
 });
 
@@ -638,8 +740,27 @@ app.post(
         return res.status(400).json({ error: "Resume file upload is compulsory." });
       }
 
-      if (!req.body.email || !isValidEmail(req.body.email)) {
+      const { email, password, otp } = req.body;
+      if (!email || !isValidEmail(email)) {
         return res.status(400).json({ error: "A valid email address is required." });
+      }
+      if (!password || !isStrongPassword(password)) {
+        return res.status(400).json({ error: "Password must be at least 8 characters long." });
+      }
+      if (!otp) {
+        return res.status(400).json({ error: "OTP code is required." });
+      }
+
+      // Verify OTP
+      const isOtpValid = await verifyOtpCode(email, otp);
+      if (!isOtpValid) {
+        return res.status(400).json({ error: "Invalid or expired OTP code." });
+      }
+
+      const emailLower = String(email).trim().toLowerCase();
+      const existingUser = await User.findOne({ email: emailLower });
+      if (existingUser) {
+        return res.status(409).json({ error: "Email is already registered." });
       }
 
       const txnId = req.body.txnId || "";
@@ -659,21 +780,52 @@ app.post(
 
       const record = await TeacherRegistration.create({
         ...req.body,
+        email: emailLower,
         resumeUrl,
         photoUrl,
         screenshotUrl,
         isApproved: false,
       });
 
+      // Create user login account
+      const passwordHash = await bcrypt.hash(password, 12);
+      const user = await User.create({
+        name: record.name,
+        email: emailLower,
+        passwordHash,
+        role: "Teacher",
+        refId: record._id,
+        refModel: "TeacherRegistration",
+      });
+
+      const newAuthUser = {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        refId: user.refId?.toString(),
+      };
+      const tokenVal = signAccessToken(newAuthUser);
+      const refreshTokenVal = signRefreshToken(newAuthUser);
+
+      user.refreshToken = refreshTokenVal;
+      await user.save();
+
       await logAction(
         "Teacher Applicant",
-        `New Teacher Registration received from ${record.name} (${record.qualification})`,
+        `New Teacher Registration and User Account received from ${record.name} (${record.qualification})`,
         req.ip
       );
 
       await notifyTeacherRegistered(record.email, record.name);
 
-      res.json({ success: true, record: normalizeRecord(record) });
+      res.status(201).json({
+        success: true,
+        token: tokenVal,
+        refreshToken: refreshTokenVal,
+        user: newAuthUser,
+        record: normalizeRecord(record),
+      });
     } catch (error) {
       console.error("Teacher registration failed:", error);
       res.status(400).json({ error: "Failed to persist teacher registration" });
@@ -684,20 +836,74 @@ app.post(
 // School Request solutions
 app.post("/api/school-request", async (req, res) => {
   try {
-    if (!req.body.email || !isValidEmail(req.body.email)) {
+    const { orgName, contactPerson, email, password, otp } = req.body;
+    if (!email || !isValidEmail(email)) {
       return res.status(400).json({ error: "A valid email address is required." });
     }
+    if (!password || !isStrongPassword(password)) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long." });
+    }
+    if (!otp) {
+      return res.status(400).json({ error: "OTP code is required." });
+    }
+
+    // Verify OTP
+    const isOtpValid = await verifyOtpCode(email, otp);
+    if (!isOtpValid) {
+      return res.status(400).json({ error: "Invalid or expired OTP code." });
+    }
+
+    // Check if user already exists
+    const emailLower = String(email).trim().toLowerCase();
+    const existingUser = await User.findOne({ email: emailLower });
+    if (existingUser) {
+      return res.status(409).json({ error: "Email is already registered." });
+    }
+
+    // Create school request profile
     const record = await SchoolRequest.create(req.body);
+
+    // Create user login account
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({
+      name: contactPerson,
+      email: emailLower,
+      passwordHash,
+      role: "School",
+      refId: record._id,
+      refModel: "SchoolRequest",
+    });
+
+    const authUser = {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      refId: user.refId?.toString(),
+    };
+    const token = signAccessToken(authUser);
+    const refreshToken = signRefreshToken(authUser);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
     await logAction(
       "School / Institution",
-      `New school solution inquiry submitted by ${record.orgName} (${record.contactPerson})`,
+      `New school solutions request and User Account registered by ${record.orgName} (${record.contactPerson})`,
       req.ip
     );
     await notifySchoolRegistered(record.email, record.orgName);
-    res.json({ success: true, record: normalizeRecord(record) });
+
+    res.status(201).json({
+      success: true,
+      token,
+      refreshToken,
+      user: authUser,
+      record: normalizeRecord(record),
+    });
   } catch (error) {
     console.error("School request failed:", error);
-    res.status(400).json({ error: "Failed to submit school solution request" });
+    res.status(400).json({ error: "Failed to submit or complete school request registration" });
   }
 });
 

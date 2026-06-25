@@ -145,3 +145,13 @@ export const Vacancy = mongoose.model("Vacancy", vacancySchema);
 export const AdminLog = mongoose.model("AdminLog", adminLogSchema);
 export const User = mongoose.model("User", userSchema);
 export const AdminUser = User; // Backward compatibility alias
+
+// OTP Verification Schema (valid for 5 minutes)
+const otpSchema = new Schema(
+  {
+    email: { type: String, required: true, trim: true, lowercase: true },
+    otp: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now, expires: 300 }
+  }
+);
+export const Otp = mongoose.model("Otp", otpSchema);
