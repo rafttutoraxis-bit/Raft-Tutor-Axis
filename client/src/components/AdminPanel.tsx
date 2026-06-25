@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Lock, AlertTriangle, Shield, HelpCircle, Check } from "lucide-react";
+import { Lock, AlertTriangle, Shield, HelpCircle, Check, Eye, EyeOff } from "lucide-react";
 import { api } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useSettings } from "../contexts/SettingsContext";
@@ -38,6 +38,17 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
   const [successMsg, setSuccessMsg] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showResetNewPassword, setShowResetNewPassword] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rta_remembered_email");
+    if (savedEmail) {
+      setLoginEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   // Live database collections
   const [parents, setParents] = useState<any[]>([]);
@@ -87,12 +98,23 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
     try {
       const success = await login(loginEmail, loginPassword);
       if (success) {
+        if (rememberMe) {
+          localStorage.setItem("rta_remembered_email", loginEmail);
+        } else {
+          localStorage.removeItem("rta_remembered_email");
+        }
         const storedUser = localStorage.getItem("rta_user");
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
           if (isUserMode && (parsed.role === "Super Admin" || parsed.role === "Operations Manager")) {
             logout();
             setErrorMsg("Invalid credentials.");
+            setLoading(false);
+            return;
+          }
+          if (!isUserMode && !(parsed.role === "Super Admin" || parsed.role === "Operations Manager")) {
+            logout();
+            setErrorMsg("Invalid administrator or operations credentials.");
             setLoading(false);
             return;
           }
@@ -233,12 +255,16 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
     const isForgotMode = authCardMode === "forgot";
     const isResetMode = authCardMode === "reset";
 
+    const queryParams = new URLSearchParams(window.location.search);
+    const roleParam = queryParams.get("role");
+    const selectedRole = (roleParam && ["Parent", "Teacher", "School"].includes(roleParam)) ? roleParam : null;
+
     const titleText = isForgotMode
       ? "Reset Password Request"
       : isResetMode
       ? "Initialize New Password"
       : isUserMode
-      ? "RTA Portal Login"
+      ? (selectedRole ? `${selectedRole} Portal Login` : "RTA Portal Login")
       : "RTA Staff Gatekeeper";
 
     const subtitleText = isForgotMode
@@ -246,11 +272,13 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
       : isResetMode
       ? "Provide the code sent to your inbox and establish your new password"
       : isUserMode
-      ? "Access your Teacher, Parent, or School workspace"
+      ? (selectedRole ? `Access your individual ${selectedRole} workspace` : "Access your Teacher, Parent, or School workspace")
       : "AUTHORIZED OPERATIONS LOGS AND FOUNDERS LOGIN ONLY";
 
-    const emailLabel = isUserMode ? "Portal Email" : "Admin Email";
-    const emailPlaceholder = isUserMode ? "e.g. teacher@rafttutoraxis.com" : "e.g. admin@rafttutoraxis.com";
+    const emailLabel = isUserMode ? (selectedRole ? `${selectedRole} Email` : "Portal Email") : "Admin Email";
+    const emailPlaceholder = isUserMode 
+      ? (selectedRole ? `e.g. ${selectedRole.toLowerCase()}@rafttutoraxis.com` : "e.g. teacher@rafttutoraxis.com") 
+      : "e.g. admin@rafttutoraxis.com";
 
     return (
       <section className="py-20 bg-[#110d22] transition-colors duration-300 min-h-[500px] flex items-center justify-center px-4">
@@ -300,15 +328,40 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                   {isUserMode ? "Password" : "Root Password"}
                 </label>
-                <input
-                  type="password"
-                  placeholder={isUserMode ? "Enter password" : "Enter password token"}
-                  value={loginPassword}
-                  onChange={e => setLoginPassword(e.target.value)}
-                  className="w-full bg-[#110d22] border border-zinc-800 focus:border-[#9bfc07] outline-none px-3.5 py-3 rounded-xl text-xs text-white placeholder-zinc-650"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showLoginPassword ? "text" : "password"}
+                    placeholder={isUserMode ? "Enter password" : "Enter password token"}
+                    value={loginPassword}
+                    onChange={e => setLoginPassword(e.target.value)}
+                    className="w-full bg-[#110d22] border border-zinc-800 focus:border-[#9bfc07] outline-none pl-4 pr-11 py-3 rounded-xl text-xs text-white placeholder-zinc-650 transition-all duration-200"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-450 hover:text-[#9bfc07] transition-all duration-200 focus:outline-none cursor-pointer flex items-center justify-center"
+                    aria-label={showLoginPassword ? "Show password" : "Hide password"}
+                  >
+                    {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
+
+              {isUserMode && (
+                <div className="flex items-center gap-2 px-1">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-zinc-800 bg-[#110d22] text-[#9bfc07] focus:ring-[#9bfc07]/30 cursor-pointer"
+                  />
+                  <label htmlFor="rememberMe" className="text-[10px] text-zinc-400 font-mono select-none cursor-pointer">
+                    Remember Me
+                  </label>
+                </div>
+              )}
 
               <div className="flex justify-between items-center text-[10px] px-1 font-mono">
                 <button
@@ -343,6 +396,18 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
               >
                 Login Securely
               </Button>
+
+              {isUserMode && (
+                <div className="flex justify-between items-center text-[10px] px-1 font-mono pt-3 border-t border-zinc-850 mt-1 select-none">
+                  <span className="text-zinc-500">Need an account?</span>
+                  <a
+                    href="/#inquiry-forms-section"
+                    className="text-[#9bfc07] hover:underline font-bold"
+                  >
+                    Create Account
+                  </a>
+                </div>
+              )}
             </form>
           )}
 
@@ -413,14 +478,24 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
 
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">New Password</label>
-                <input
-                  type="password"
-                  placeholder="Min 8 characters"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  className="w-full bg-[#110d22] border border-zinc-800 focus:border-[#9bfc07] outline-none px-3.5 py-3 rounded-xl text-xs text-white placeholder-zinc-650"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showResetNewPassword ? "text" : "password"}
+                    placeholder="Min 8 characters"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="w-full bg-[#110d22] border border-zinc-800 focus:border-[#9bfc07] outline-none pl-4 pr-11 py-3 rounded-xl text-xs text-white placeholder-zinc-650 transition-all duration-200"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetNewPassword(!showResetNewPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-450 hover:text-[#9bfc07] transition-all duration-200 focus:outline-none cursor-pointer flex items-center justify-center"
+                    aria-label={showResetNewPassword ? "Show password" : "Hide password"}
+                  >
+                    {showResetNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex justify-start text-[10px] px-1 font-mono">

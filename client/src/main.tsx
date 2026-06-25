@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import App from "./App";
 import AdminPage from "./AdminPage";
+import AdminLoginPage from "./AdminLoginPage";
 import LoginPage from "./LoginPage";
 import ProtectedRoute from "./components/UI/ProtectedRoute";
 
@@ -29,6 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/login" element={<LoginPage />} />
             </Routes>
           </BrowserRouter>

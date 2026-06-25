@@ -26,9 +26,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
       return <Navigate to="/" replace />;
     }
   } else {
-    // If not logged in, the admin page should be accessible to log in.
-    // However, if standard routes are protected, we might want to redirect to /login.
-    // For admin, we allow showing the login card.
+    // If not logged in, redirect to /admin/login
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <>{children}</>;

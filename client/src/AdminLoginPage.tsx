@@ -1,7 +1,12 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import AdminPanel from "./components/AdminPanel";
 
-export default function AdminPage() {
+export default function AdminLoginPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   // Inject noindex, nofollow meta tag on all admin pages
   useEffect(() => {
     let meta = document.querySelector('meta[name="robots"]');
@@ -28,11 +33,25 @@ export default function AdminPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      if (user.role === "Super Admin" || user.role === "Operations Manager") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [user, navigate]);
+
   return (
-    <AdminPanel
-      lang="en"
-      onForceRefresh={() => {}}
-      mode="admin"
-    />
+    <div className="min-h-screen bg-[#110d22] text-white flex flex-col justify-center items-center py-10">
+      <div className="w-full max-w-7xl px-4 sm:px-6">
+        <AdminPanel
+          lang="en"
+          onForceRefresh={() => {}}
+          mode="admin"
+        />
+      </div>
+    </div>
   );
 }

@@ -27,6 +27,7 @@ export default function Navbar({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isPortalDropdownOpen, setIsPortalDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +36,20 @@ export default function Navbar({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!(e.target as Element).closest(".dropdown-container")) {
+        setIsPortalDropdownOpen(false);
+      }
+    };
+    if (isPortalDropdownOpen) {
+      document.addEventListener("click", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [isPortalDropdownOpen]);
 
   const menuItems = [
     { id: "home", label: currentLang === "en" ? "Home" : "होम" },
@@ -145,15 +160,39 @@ export default function Navbar({
               <span>Logout</span>
             </Button>
           ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-1.5"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Portal Login</span>
-            </Button>
+            <div className="relative dropdown-container">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsPortalDropdownOpen(!isPortalDropdownOpen)}
+                className="flex items-center gap-1.5"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Portal Login</span>
+              </Button>
+              {isPortalDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-xl bg-[#1b1631] border border-[#9bfc07]/20 shadow-xl py-2 z-50 animate-fade-in text-left">
+                  <button
+                    onClick={() => { navigate("/login?role=Parent"); setIsPortalDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-white/95 hover:text-[#9bfc07] hover:bg-white/5 transition-all cursor-pointer"
+                  >
+                    Parent Login
+                  </button>
+                  <button
+                    onClick={() => { navigate("/login?role=Teacher"); setIsPortalDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-white/95 hover:text-[#9bfc07] hover:bg-white/5 transition-all cursor-pointer border-t border-white/5"
+                  >
+                    Teacher Login
+                  </button>
+                  <button
+                    onClick={() => { navigate("/login?role=School"); setIsPortalDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-white/95 hover:text-[#9bfc07] hover:bg-white/5 transition-all cursor-pointer border-t border-white/5"
+                  >
+                    School Login
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -215,12 +254,29 @@ export default function Navbar({
                 Logout
               </button>
             ) : (
-              <button
-                onClick={() => { navigate("/login"); setIsOpen(false); }}
-                className="px-4 py-2 bg-[#9bfc07] text-[#1b1631] font-display font-medium rounded-lg text-[10px]"
-              >
-                Portal Login
-              </button>
+              <div className="col-span-2 flex flex-col gap-2 mt-2">
+                <div className="text-[10px] text-zinc-400 font-mono tracking-widest text-left uppercase">Portal Login</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => { navigate("/login?role=Parent"); setIsOpen(false); }}
+                    className="px-2 py-2 bg-white/5 text-white/95 border border-[#9bfc07]/10 hover:border-[#9bfc07]/40 hover:text-[#9bfc07] font-display font-bold rounded-lg text-[10px] cursor-pointer"
+                  >
+                    Parent
+                  </button>
+                  <button
+                    onClick={() => { navigate("/login?role=Teacher"); setIsOpen(false); }}
+                    className="px-2 py-2 bg-[#9bfc07] text-[#1b1631] font-display font-black rounded-lg text-[10px] cursor-pointer"
+                  >
+                    Teacher
+                  </button>
+                  <button
+                    onClick={() => { navigate("/login?role=School"); setIsOpen(false); }}
+                    className="px-2 py-2 bg-white/5 text-white/95 border border-[#9bfc07]/10 hover:border-[#9bfc07]/40 hover:text-[#9bfc07] font-display font-bold rounded-lg text-[10px] cursor-pointer"
+                  >
+                    School
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Phone, Mail, MapPin, GraduationCap, Briefcase, BookOpen, Layers, IndianRupee, FileText, Camera, CheckCircle2, AlertCircle, Sparkles, Building, Send, QrCode, Shield, RefreshCw } from "lucide-react";
+import { User, Phone, Mail, MapPin, GraduationCap, Briefcase, BookOpen, Layers, IndianRupee, FileText, Camera, CheckCircle2, AlertCircle, Sparkles, Building, Send, QrCode, Shield, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { API_URL } from "../config";
 import { useSettings } from "../contexts/SettingsContext";
 import Card from "./UI/Card";
@@ -25,7 +25,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
     subjects: "",
     mode: "Home",
     address: "",
-    message: ""
+    message: "",
+    password: ""
   });
 
   // Teacher form state
@@ -43,7 +44,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
     expectedFees: "",
     resumeUrl: "",
     photoUrl: "",
-    address: ""
+    address: "",
+    password: ""
   });
 
   // School form state
@@ -53,7 +55,8 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
     phone: "",
     email: "",
     location: "",
-    details: ""
+    details: "",
+    password: ""
   });
 
   const [status, setStatus] = useState<{ type: "success" | "error" | null; message: string }>({ type: null, message: "" });
@@ -70,6 +73,209 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
   const [upiTxnId, setUpiTxnId] = useState("");
   const [isPaying, setIsPaying] = useState(false);
   const [paySuccess, setPaySuccess] = useState(false);
+
+  // OTP Verification States
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpResendSuccess, setOtpResendSuccess] = useState(false);
+  const [showParentPassword, setShowParentPassword] = useState(false);
+  const [showTeacherPassword, setShowTeacherPassword] = useState(false);
+  const [showSchoolPassword, setShowSchoolPassword] = useState(false);
+
+  const renderPasswordStrength = (password: string) => {
+    if (!password) return null;
+
+    const requirements = [
+      { id: "length", label: lang === "en" ? "Minimum 8 characters" : "कम से कम 8 अक्षर", met: password.length >= 8 },
+      { id: "uppercase", label: lang === "en" ? "1 uppercase letter" : "1 बड़ा अक्षर (uppercase)", met: /[A-Z]/.test(password) },
+      { id: "lowercase", label: lang === "en" ? "1 lowercase letter" : "1 छोटा अक्षर (lowercase)", met: /[a-z]/.test(password) },
+      { id: "number", label: lang === "en" ? "1 number" : "1 संख्या (0-9)", met: /[0-9]/.test(password) },
+      { id: "special", label: lang === "en" ? "1 special character" : "1 विशेष वर्ण (!@#$ etc)", met: /[^A-Za-z0-9]/.test(password) },
+    ];
+
+    const score = requirements.filter(r => r.met).length;
+    let strengthColor = "bg-rose-500";
+    let strengthText = lang === "en" ? "Weak" : "कमजोर";
+    if (score >= 5) {
+      strengthColor = "bg-[#9bfc07]";
+      strengthText = lang === "en" ? "Strong" : "मजबूत";
+    } else if (score >= 3) {
+      strengthColor = "bg-amber-500";
+      strengthText = lang === "en" ? "Medium" : "मध्यम";
+    }
+
+    return (
+      <div className="mt-3.5 space-y-3.5 bg-[#110d22]/50 p-4 rounded-xl border border-zinc-800/80 animate-fade-in select-none">
+        <div className="flex justify-between items-center text-[10px] font-mono">
+          <span className="text-zinc-400">{lang === "en" ? "Password Strength:" : "पासवर्ड की ताकत:"}</span>
+          <span className={`font-bold uppercase tracking-wider ${score >= 5 ? "text-[#9bfc07]" : score >= 3 ? "text-amber-400" : "text-rose-400"}`}>{strengthText}</span>
+        </div>
+        <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden flex gap-0.5">
+          <div className={`h-full transition-all duration-300 ${strengthColor}`} style={{ width: `${(score / 5) * 100}%` }} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono mt-2">
+          {requirements.map((req, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${req.met ? "bg-[#9bfc07] shadow-sm shadow-[#9bfc07]/50" : "bg-zinc-650"}`} />
+              <span className={req.met ? "text-white font-medium" : "text-zinc-400"}>{req.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  const startOtpFlow = async (email: string) => {
+    setOtpError("");
+    setOtpResendSuccess(false);
+    setOtpLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setOtpEmail(email);
+        setShowOtpModal(true);
+      } else {
+        setStatus({ type: "error", message: data.error || "Failed to trigger OTP verification code." });
+      }
+    } catch {
+      setStatus({ type: "error", message: "Failed to dispatch verification email. Verify connectivity." });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const executeTeacherSubmit = (paid: boolean, txnId?: string) => {
+    if (!paid) {
+      alert("Payment is required to complete registration.");
+      return;
+    }
+    if (!screenshotFile) {
+      alert("Please upload your payment screenshot receipt.");
+      return;
+    }
+    if (!txnId || txnId.length !== 12) {
+      alert("Please enter a valid 12-digit transaction ID.");
+      return;
+    }
+    setShowPaymentModal(false);
+    startOtpFlow(teacherData.email);
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.trim().length !== 6) {
+      setOtpError("Please enter a valid 6-digit OTP code.");
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      let response;
+      let data;
+      
+      if (activeForm === "parent") {
+        response = await fetch(`${API_URL}/api/parent-registration`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...parentData, otp: otpCode })
+        });
+        data = await response.json();
+      } else if (activeForm === "teacher") {
+        const formData = new FormData();
+        Object.entries(teacherData).forEach(([key, val]) => {
+          formData.append(key, val as string);
+        });
+        formData.append("otp", otpCode);
+        formData.append("paymentStatus", "Paid");
+        formData.append("txnId", upiTxnId);
+        
+        if (resumeFile) formData.append("resume", resumeFile);
+        if (photoFile) formData.append("photo", photoFile);
+        if (screenshotFile) formData.append("screenshot", screenshotFile);
+
+        response = await fetch(`${API_URL}/api/teacher-registration`, {
+          method: "POST",
+          body: formData
+        });
+        data = await response.json();
+      } else if (activeForm === "school") {
+        response = await fetch(`${API_URL}/api/school-request`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...schoolData, otp: otpCode })
+        });
+        data = await response.json();
+      }
+
+      if (response && response.ok && data.success) {
+        localStorage.setItem("rta_token", data.token);
+        localStorage.setItem("rta_admin_token", data.token);
+        localStorage.setItem("rta_refresh_token", data.refreshToken);
+        localStorage.setItem("rta_user", JSON.stringify(data.user));
+        
+        window.dispatchEvent(new Event("auth-changed"));
+        setShowOtpModal(false);
+        setOtpCode("");
+
+        if (onNewRegistration) {
+          onNewRegistration();
+        }
+
+        setStatus({
+          type: "success",
+          message: activeForm === "teacher"
+            ? "Registration submitted successfully! Your profile is pending verification."
+            : "Registration completed successfully! Welcome to Raft Tutor Axis."
+        });
+
+        setTimeout(() => {
+          const workspace = document.getElementById("portal-workspace-console");
+          if (workspace) {
+            workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+          }
+        }, 800);
+      } else {
+        setOtpError(data?.error || "OTP verification failed. Please try again.");
+      }
+    } catch (err: any) {
+      setOtpError("Network error. Failed to complete registration.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setOtpLoading(true);
+    setOtpError("");
+    setOtpResendSuccess(false);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: otpEmail })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setOtpResendSuccess(true);
+      } else {
+        setOtpError(data.error || "Failed to resend OTP code.");
+      }
+    } catch {
+      setOtpError("Failed to resend OTP. Verify connectivity.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const getFullUrl = (path: string) => {
     if (!path) return "";
@@ -126,48 +332,19 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       !parentData.city ||
       !parentData.studentClass ||
       !parentData.subjects ||
-      !parentData.address
+      !parentData.address ||
+      !parentData.password
     ) {
       setStatus({ type: "error", message: lang === "en" ? "Please fill all required keys." : "कृपया सभी आवश्यक विवरण भरें।" });
       return;
     }
-    setLoading(true);
-    setStatus({ type: null, message: "" });
 
-    try {
-      const response = await fetch(`${API_URL}/api/parent-registration`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parentData)
-      });
-      if (response.ok) {
-        setStatus({
-          type: "success",
-          message: lang === "en" 
-            ? "Your request has been filed successfully! We will map a tutor in 24 hrs." 
-            : "आपका अनुरोध सफलतापूर्वक दर्ज कर लिया गया है! हम 24 घंटे में ट्यूटर असाइन करेंगे।"
-        });
-        setParentData({
-          name: "",
-          mobile: "",
-          email: "",
-          city: "",
-          studentClass: "",
-          board: "CBSE",
-          subjects: "",
-          mode: "Home",
-          address: "",
-          message: ""
-        });
-        if (onNewRegistration) onNewRegistration();
-      } else {
-        throw new Error();
-      }
-    } catch {
-      setStatus({ type: "error", message: "Failed to connect to primary server. Try again shortly." });
-    } finally {
-      setLoading(false);
+    if (parentData.password.length < 8) {
+      setStatus({ type: "error", message: "Password must be at least 8 characters long." });
+      return;
     }
+
+    await startOtpFlow(parentData.email);
   };
 
   const handleTeacherSubmit = (e: React.FormEvent) => {
@@ -188,11 +365,18 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       !teacherData.subjects ||
       !teacherData.classes ||
       !teacherData.address ||
+      !teacherData.password ||
       !resumeFile
     ) {
       setStatus({ type: "error", message: "Required fields missing. Please fill out all fields and upload your Resume/Biodata." });
       return;
     }
+
+    if (teacherData.password.length < 8) {
+      setStatus({ type: "error", message: "Password must be at least 8 characters long." });
+      return;
+    }
+
     setStatus({ type: null, message: "" });
     setShowPaymentModal(true);
   };
@@ -203,74 +387,15 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       setIsPaying(false);
       setPaySuccess(true);
       setTimeout(() => {
-        const mockTxnId = "TXN" + Math.floor(100000000000 + Math.random() * 900000000000);
-        executeTeacherSubmit(true, mockTxnId);
+        const mockTxnId = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+        setUpiTxnId(mockTxnId);
+        const mockBlob = new Blob(["express payment receipt"], { type: "image/png" });
+        const mockFile = new File([mockBlob], `receipt_${provider.toLowerCase()}.png`, { type: "image/png" });
+        setScreenshotFile(mockFile);
+        setPaySuccess(false);
+        startOtpFlow(teacherData.email);
       }, 1500);
     }, 1500);
-  };
-
-  const executeTeacherSubmit = async (isPaid: boolean, txnIdToSave: string = "") => {
-    setLoading(true);
-    setStatus({ type: null, message: "" });
-
-    try {
-      const formData = new FormData();
-      Object.entries(teacherData).forEach(([key, value]) => {
-        if (key !== "resumeUrl" && key !== "photoUrl") {
-          formData.append(key, String(value));
-        }
-      });
-      if (resumeFile) formData.append("resume", resumeFile);
-      if (photoFile) formData.append("photo", photoFile);
-      if (screenshotFile) formData.append("screenshot", screenshotFile);
-
-      formData.append("paymentStatus", isPaid ? "Paid" : "Pending");
-      formData.append("txnId", txnIdToSave);
-
-      const response = await fetch(`${API_URL}/api/teacher-registration`, {
-        method: "POST",
-        body: formData
-      });
-      if (response.ok) {
-        setStatus({
-          type: "success",
-          message: isPaid
-            ? `Payment verified! Registered successfully under Transaction ID ${txnIdToSave}. Our coordinator desk will contact you shortly.`
-            : `Registered successfully (Registration Fee ₹${settings.registrationFee} Pending)! Our coordinator desk will contact you once verified.`
-        });
-        setTeacherData({
-          name: "",
-          mobile: "",
-          email: "",
-          gender: "Male",
-          city: "",
-          qualification: "",
-          experience: "",
-          subjects: "",
-          classes: "",
-          mode: "Both",
-          expectedFees: "",
-          resumeUrl: "",
-          photoUrl: "",
-          address: ""
-        });
-        setResumeFile(null);
-        setPhotoFile(null);
-        setScreenshotFile(null);
-        setScreenshotPreview("");
-        setUpiTxnId("");
-        if (onNewRegistration) onNewRegistration();
-      } else {
-        const err = await response.json();
-        setStatus({ type: "error", message: err.error || "Failed to reach registration engine." });
-      }
-    } catch {
-      setStatus({ type: "error", message: "Failed to reach registration engine." });
-    } finally {
-      setLoading(false);
-      setShowPaymentModal(false);
-      setPaySuccess(false);
-    }
   };
 
   const handleSchoolSubmit = async (e: React.FormEvent) => {
@@ -287,42 +412,19 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
       !schoolData.phone ||
       !schoolData.email ||
       !schoolData.location ||
-      !schoolData.details
+      !schoolData.details ||
+      !schoolData.password
     ) {
-      setStatus({ type: "error", message: "Organization name and phone details are mandatory." });
+      setStatus({ type: "error", message: "All fields including password are required." });
       return;
     }
-    setLoading(true);
-    setStatus({ type: null, message: "" });
 
-    try {
-      const response = await fetch(`${API_URL}/api/school-request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(schoolData)
-      });
-      if (response.ok) {
-        setStatus({
-          type: "success",
-          message: "School solutions request registered! Our Institutional Placement Coordinator will map candidates tomorrow."
-        });
-        setSchoolData({
-          orgName: "",
-          contactPerson: "",
-          phone: "",
-          email: "",
-          location: "",
-          details: ""
-        });
-        if (onNewRegistration) onNewRegistration();
-      } else {
-        throw new Error();
-      }
-    } catch {
-      setStatus({ type: "error", message: "Failed to store school solutions catalog." });
-    } finally {
-      setLoading(false);
+    if (schoolData.password.length < 8) {
+      setStatus({ type: "error", message: "Password must be at least 8 characters long." });
+      return;
     }
+
+    await startOtpFlow(schoolData.email);
   };
 
   return (
@@ -508,6 +610,32 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     <option value="Online">{lang === "en" ? "Online Live Class" : "ऑनलाइन लाइव क्लास"}</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="space-y-1.5 text-white text-xs">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                  {lang === "en" ? "Create Password" : "पासवर्ड बनाएं"} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showParentPassword ? "text" : "password"}
+                    value={parentData.password}
+                    onChange={e => setParentData({ ...parentData, password: e.target.value })}
+                    placeholder="Minimum 8 characters"
+                    className="w-full bg-[#110d22] pl-4 pr-11 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none text-xs text-white transition-all duration-200"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowParentPassword(!showParentPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-450 hover:text-[#9bfc07] transition-all duration-200 focus:outline-none cursor-pointer flex items-center justify-center"
+                    aria-label={showParentPassword ? "Hide password" : "Show password"}
+                  >
+                    {showParentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {renderPasswordStrength(parentData.password)}
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
@@ -765,6 +893,30 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
               </div>
 
+              <div className="space-y-1.5 text-white text-xs">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password *</label>
+                <div className="relative">
+                  <input
+                    type={showTeacherPassword ? "text" : "password"}
+                    value={teacherData.password}
+                    onChange={e => setTeacherData({ ...teacherData, password: e.target.value })}
+                    placeholder="Minimum 8 characters"
+                    className="w-full bg-[#110d22] pl-4 pr-11 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none text-xs text-white transition-all duration-200"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowTeacherPassword(!showTeacherPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-450 hover:text-[#9bfc07] transition-all duration-200 focus:outline-none cursor-pointer flex items-center justify-center"
+                    aria-label={showTeacherPassword ? "Hide password" : "Show password"}
+                  >
+                    {showTeacherPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {renderPasswordStrength(teacherData.password)}
+              </div>
+
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address *</label>
                 <textarea
@@ -879,6 +1031,30 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1.5 text-white text-xs">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password *</label>
+                <div className="relative">
+                  <input
+                    type={showSchoolPassword ? "text" : "password"}
+                    value={schoolData.password}
+                    onChange={e => setSchoolData({ ...schoolData, password: e.target.value })}
+                    placeholder="Minimum 8 characters"
+                    className="w-full bg-[#110d22] pl-4 pr-11 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none text-xs text-white transition-all duration-200"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSchoolPassword(!showSchoolPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-450 hover:text-[#9bfc07] transition-all duration-200 focus:outline-none cursor-pointer flex items-center justify-center"
+                    aria-label={showSchoolPassword ? "Hide password" : "Show password"}
+                  >
+                    {showSchoolPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {renderPasswordStrength(schoolData.password)}
               </div>
 
               <div className="space-y-1.5">
@@ -1141,17 +1317,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 <button
                   type="button"
                   onClick={() => setShowPaymentModal(false)}
-                  className="flex-1 py-3 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-semibold uppercase tracking-wider cursor-pointer text-center"
+                  className="w-full py-3 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs font-semibold uppercase tracking-wider cursor-pointer text-center"
                 >
                   Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => executeTeacherSubmit(false)}
-                  className="flex-1 py-3 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-300 rounded-xl text-[10px] font-bold uppercase tracking-wider cursor-pointer text-center"
-                  title="Registers your profile but keeps verification status pending payment"
-                >
-                  Pay Later
                 </button>
               </div>
             )}
@@ -1159,6 +1327,86 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
         </div>
       )}
 
+      {/* OTP verification overlay modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in text-white font-sans">
+          <Card variant="gradient" hoverable={false} className="max-w-md w-full p-6 sm:p-8 space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-[#9bfc07]/10 border border-[#9bfc07]/30 rounded-full flex items-center justify-center text-[#9bfc07] mb-3.5">
+                <Shield className="w-6 h-6 animate-pulse" />
+              </div>
+              <h3 className="font-display font-bold text-lg leading-tight uppercase tracking-wider">
+                Email Verification
+              </h3>
+              <p className="text-[10px] text-zinc-400 font-mono tracking-widest mt-1">
+                ENTER THE OTP SENT TO YOUR INBOX
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="bg-[#110d22] border border-[#9bfc07]/10 p-4 rounded-xl text-center text-xs space-y-2">
+                <p className="text-zinc-400">
+                  We've sent a 6-digit verification code to:
+                </p>
+                <p className="font-bold text-white select-all">{otpEmail}</p>
+              </div>
+
+              {otpError && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-450 rounded-xl text-[10px] flex items-start gap-2 text-left">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{otpError}</span>
+                </div>
+              )}
+
+              {otpResendSuccess && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-[#9bfc07] rounded-xl text-[10px] flex items-start gap-2 text-left">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>OTP code has been resent successfully.</span>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">Verification Code</label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="e.g. 123456"
+                  className="w-full text-center bg-[#110d22] border border-[#9bfc07]/20 focus:border-[#9bfc07] outline-none px-3.5 py-3 rounded-xl text-lg font-bold text-white tracking-widest font-mono"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={otpLoading || otpCode.length !== 6}
+                className="w-full py-3.5 bg-[#9bfc07] hover:bg-white text-[#1b1631] font-display font-semibold transition-all rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-[#9bfc07]/10 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {otpLoading ? "Verifying Code..." : "Verify & Complete Signup"}
+              </button>
+
+              <div className="flex justify-between items-center text-[10px] px-1 font-mono">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={otpLoading}
+                  className="text-[#9bfc07] hover:underline"
+                >
+                  Resend OTP Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowOtpModal(false)}
+                  className="text-zinc-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </section>
   );
 }

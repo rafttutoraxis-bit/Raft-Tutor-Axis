@@ -119,6 +119,19 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto px-4">
+      {/* Verification Warning Alert */}
+      {!profile.isApproved && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-2xl text-xs flex items-start gap-3 select-none animate-pulse">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-left">
+            <h4 className="font-bold uppercase tracking-wider text-[10px]">Verification In Progress</h4>
+            <p className="leading-relaxed">
+              Your profile is under verification. You cannot receive student requests until approved.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="p-8 rounded-2xl bg-gradient-to-r from-[#1b1631] via-[#110d22] to-black border border-[#9bfc07]/15 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div className="flex items-center gap-4">
