@@ -160,7 +160,7 @@ export default function App() {
             <div className="md:col-span-5 relative">
               <div className="aspect-square bg-[#110d22] rounded-2xl overflow-hidden shadow-2xl relative border border-[#9bfc07]/10">
                 <img 
-                  src="/tutor.png"
+                  src="/tutoring.png"
                   alt="Tutoring" 
                   className="w-full h-full object-cover opacity-90 filter brightness-90 transition-all duration-500 hover:scale-105"
                 />
