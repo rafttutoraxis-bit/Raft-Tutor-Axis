@@ -281,7 +281,7 @@ export default function App() {
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img
-                    src={founder.image.startsWith("http") ? founder.image : `https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400`}
+                    src={founder.image}
                     alt={founder.name}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
