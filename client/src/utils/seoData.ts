@@ -8,9 +8,23 @@ export const baseSchema = {
       "@id": "https://rafttutoraxis.in/#organization",
       "name": "Raft Tutor Axis",
       "url": "https://rafttutoraxis.in",
-      "logo": "https://rafttutoraxis.in/BG.png",
+      "logo": "https://rafttutoraxis.in/Logo.png",
       "email": "support@rafttutoraxis.in",
       "telephone": "+91-6205355760",
+      "foundingDate": "2025",
+      "areaServed": "India",
+      "contactPoint": [
+        {
+        "@type": "ContactPoint",
+        "telephone": "+91-6205355760",
+        "contactType": "customer support",
+        "areaServed": "IN",
+        "availableLanguage": [
+          "English",
+          "Hindi"
+        ]
+      }
+    ],
       "sameAs": [
         "https://www.facebook.com/rafttutoraxis",
         "https://www.instagram.com/rafttutoraxis",
@@ -25,6 +39,14 @@ export const baseSchema = {
       "logo": "https://rafttutoraxis.in/BG.png",
       "email": "support@rafttutoraxis.in",
       "telephone": "+91-6205355760",
+      "foundingDate": "2025",
+      "areaServed": "India",
+      "knowsAbout": [
+        "Home Tuition",
+        "Online Tuition",
+        "School Teacher Recruitment",
+        "Private Tutors"
+      ],
       "description": "India's growing verified teacher and home tutor recruitment network."
     },
     {
@@ -32,11 +54,6 @@ export const baseSchema = {
       "@id": "https://rafttutoraxis.in/#website",
       "url": "https://rafttutoraxis.in",
       "name": "Raft Tutor Axis",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://rafttutoraxis.in/register?query={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
     }
   ]
 };
@@ -108,8 +125,10 @@ export const localBusinessSchema = {
   "email": "support@rafttutoraxis.in",
   "address": {
     "@type": "PostalAddress",
-    "addressCountry": "IN"
+    "addressCountry": "IN",
+    "addressRegion": "Bihar"
   },
+"openingHours": "Mo-Su 09:00-20:00",
   "areaServed": [
     { "@type": "City", "name": "Patna" },
     { "@type": "City", "name": "Muzaffarpur" },
