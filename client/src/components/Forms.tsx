@@ -491,16 +491,17 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               <div className="flex items-center gap-2 mb-4 select-none">
                 <Sparkles className="w-5 h-5 text-[#9bfc07] animate-pulse" />
                 <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">
-                  {lang === "en" ? "Home Tuition Request" : "ट्यूटर अनुरोध केंद्र"}
+                  {lang === "en" ? "Home Tuition Request Wizard" : "ट्यूटर अनुरोध केंद्र"}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-white text-xs">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Parent Name" : "अभिभावक का नाम"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-name" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Parent Name" : "अभिभावक का नाम"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-name"
                       type="text"
                       value={parentData.name}
                       onChange={e => setParentData({ ...parentData, name: e.target.value })}
@@ -512,10 +513,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Mobile Number" : "मोबाइल नंबर"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-mobile" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Mobile Number" : "मोबाइल नंबर"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-mobile"
                       type="tel"
                       value={parentData.mobile}
                       onChange={e => setParentData({ ...parentData, mobile: e.target.value })}
@@ -527,10 +529,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Email Address" : "ईमेल खाता"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-email" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Email Address" : "ईमेल खाता"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-email"
                       type="email"
                       value={parentData.email}
                       onChange={e => setParentData({ ...parentData, email: e.target.value })}
@@ -542,10 +545,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "City Location" : "शहर का नाम"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-city" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "City Location" : "शहर का नाम"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-city"
                       type="text"
                       value={parentData.city}
                       onChange={e => setParentData({ ...parentData, city: e.target.value })}
@@ -557,10 +561,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Student Class" : "कक्षा"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-student-class" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Student Class" : "कक्षा"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Layers className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-student-class"
                       type="text"
                       value={parentData.studentClass}
                       onChange={e => setParentData({ ...parentData, studentClass: e.target.value })}
@@ -572,8 +577,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Educational Board" : "बोर्ड"}</label>
+                  <label htmlFor="parent-board" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Educational Board" : "बोर्ड"}<span className="text-red-500 ml-1">*</span></label>
                   <select
+                    id="parent-board"
                     value={parentData.board}
                     onChange={e => setParentData({ ...parentData, board: e.target.value as any })}
                     className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
@@ -585,10 +591,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Subjects Required" : "आवश्यक विषय"} <span className="text-red-500">*</span></label>
+                  <label htmlFor="parent-subjects" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Subjects Required" : "आवश्यक विषय"}<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <BookOpen className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="parent-subjects"
                       type="text"
                       value={parentData.subjects}
                       onChange={e => setParentData({ ...parentData, subjects: e.target.value })}
@@ -600,8 +607,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Tuition Mode" : "ट्यूशन मोड"}</label>
+                  <label htmlFor="parent-mode" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Tuition Mode" : "ट्यूशन मोड"}<span className="text-red-500 ml-1">*</span></label>
                   <select
+                    id="parent-mode"
                     value={parentData.mode}
                     onChange={e => setParentData({ ...parentData, mode: e.target.value as any })}
                     className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
@@ -613,11 +621,12 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                  {lang === "en" ? "Create Password" : "पासवर्ड बनाएं"} <span className="text-red-500">*</span>
+                <label htmlFor="parent-password" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                  {lang === "en" ? "Create Password" : "पासवर्ड बनाएं"}<span className="text-red-500 ml-1">*</span>
                 </label>
                 <div className="relative">
                   <input
+                    id="parent-password"
                     type={showParentPassword ? "text" : "password"}
                     value={parentData.password}
                     onChange={e => setParentData({ ...parentData, password: e.target.value })}
@@ -639,8 +648,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Full Physical Address" : "पूरा पता"} <span className="text-red-500">*</span></label>
+                <label htmlFor="parent-address" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{lang === "en" ? "Full Physical Address" : "पूरा पता"}<span className="text-red-500 ml-1">*</span></label>
                 <textarea
+                  id="parent-address"
                   value={parentData.address}
                   onChange={e => setParentData({ ...parentData, address: e.target.value })}
                   placeholder="e.g. Vrindavan Chokdi, House No. 25, Vadodara"
@@ -687,10 +697,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teacher Full Name <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-name" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teacher Full Name<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-name"
                       type="text"
                       value={teacherData.name}
                       onChange={e => setTeacherData({ ...teacherData, name: e.target.value })}
@@ -702,10 +713,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Number <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-mobile" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Number<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-mobile"
                       type="tel"
                       value={teacherData.mobile}
                       onChange={e => setTeacherData({ ...teacherData, mobile: e.target.value })}
@@ -717,10 +729,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-email" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-email"
                       type="email"
                       value={teacherData.email}
                       onChange={e => setTeacherData({ ...teacherData, email: e.target.value })}
@@ -732,8 +745,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Gender Selection</label>
+                  <label htmlFor="teacher-gender" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Gender Selection<span className="text-red-500 ml-1">*</span></label>
                   <select
+                    id="teacher-gender"
                     value={teacherData.gender}
                     onChange={e => setTeacherData({ ...teacherData, gender: e.target.value as any })}
                     className="w-full bg-[#110d22] px-3.5 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none"
@@ -745,10 +759,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Highest Qualification <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-qualification" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Highest Qualification<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-qualification"
                       type="text"
                       value={teacherData.qualification}
                       onChange={e => setTeacherData({ ...teacherData, qualification: e.target.value })}
@@ -760,10 +775,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Experience <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-experience" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Experience<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Briefcase className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-experience"
                       type="text"
                       value={teacherData.experience}
                       onChange={e => setTeacherData({ ...teacherData, experience: e.target.value })}
@@ -775,10 +791,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">City Availability <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-city" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">City Availability<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-city"
                       type="text"
                       value={teacherData.city}
                       onChange={e => setTeacherData({ ...teacherData, city: e.target.value })}
@@ -797,17 +814,18 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       type="text"
                       value={teacherData.expectedFees}
                       onChange={e => setTeacherData({ ...teacherData, expectedFees: e.target.value })}
-                      placeholder="e.g. 5,000 / month"
+                      placeholder="e.g. 15,000 / month"
                       className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Specialist Subjects <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-subjects" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Specialist Subjects<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <BookOpen className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-subjects"
                       type="text"
                       value={teacherData.subjects}
                       onChange={e => setTeacherData({ ...teacherData, subjects: e.target.value })}
@@ -819,10 +837,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Classes you teach <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-classes" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Classes you teach<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Layers className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="teacher-classes"
                       type="text"
                       value={teacherData.classes}
                       onChange={e => setTeacherData({ ...teacherData, classes: e.target.value })}
@@ -847,12 +866,12 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Upload Biodata / Resume <span className="text-red-500">*</span></label>
+                  <label htmlFor="teacher-resume" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Upload Biodata / Resume<span className="text-red-500 ml-1">*</span></label>
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
+                    <label htmlFor="teacher-resume" className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
                       <FileText className="w-3.5 h-3.5 text-[#9bfc07]" />
                       <span>Choose PDF/DOC</span>
-                      <input type="file" accept=".pdf,.doc,.docx" onChange={handleResumeLoad} className="hidden" />
+                      <input id="teacher-resume" type="file" accept=".pdf,.doc,.docx" onChange={handleResumeLoad} className="hidden" />
                     </label>
                     <span className="text-[9px] text-zinc-500 truncate max-w-[125px]">
                       {resumeFile ? `✓ ${resumeFile.name}` : "No CV uploaded"}
@@ -861,7 +880,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Professional Profile<span className="text-red-500">*</span></label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Professional Headshot</label>
                   <div className="flex items-center gap-3">
                     <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
                       <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />
@@ -869,7 +888,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       <input type="file" accept="image/*" onChange={handlePhotoLoad} className="hidden" />
                     </label>
                     {photoFile ? (
-                      <img src={teacherData.photoUrl} className="w-9 h-9 rounded-full object-cover border border-[#9bfc07]/25 shrink-0" />
+                      <img src={teacherData.photoUrl} className="w-9 h-9 rounded-full object-cover border border-[#9bfc07]/25 shrink-0" alt="Professional Headshot Preview" loading="lazy" width={36} height={36} />
                     ) : (
                       <span className="text-[9px] text-zinc-500">No image loaded</span>
                     )}
@@ -885,7 +904,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       <input type="file" accept="image/*" onChange={handleScreenshotLoad} className="hidden" />
                     </label>
                     {screenshotFile ? (
-                      <img src={screenshotPreview} className="w-9 h-9 rounded object-cover border border-[#9bfc07]/25 shrink-0" />
+                      <img src={screenshotPreview} className="w-9 h-9 rounded object-cover border border-[#9bfc07]/25 shrink-0" alt="Payment Screenshot Preview" loading="lazy" width={36} height={36} />
                     ) : (
                       <span className="text-[9px] text-zinc-500">No screenshot loaded</span>
                     )}
@@ -894,9 +913,10 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password <span className="text-red-500">*</span></label>
+                <label htmlFor="teacher-password" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password<span className="text-red-500 ml-1">*</span></label>
                 <div className="relative">
                   <input
+                    id="teacher-password"
                     type={showTeacherPassword ? "text" : "password"}
                     value={teacherData.password}
                     onChange={e => setTeacherData({ ...teacherData, password: e.target.value })}
@@ -918,8 +938,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address <span className="text-red-500">*</span></label>
+                <label htmlFor="teacher-address" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address<span className="text-red-500 ml-1">*</span></label>
                 <textarea
+                  id="teacher-address"
                   value={teacherData.address}
                   onChange={e => setTeacherData({ ...teacherData, address: e.target.value })}
                   placeholder="Street name, Sector, Landmark, Town details"
@@ -958,10 +979,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Organization / School Name <span className="text-red-500">*</span></label>
+                  <label htmlFor="school-org-name" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Organization / School Name<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Building className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="school-org-name"
                       type="text"
                       value={schoolData.orgName}
                       onChange={e => setSchoolData({ ...schoolData, orgName: e.target.value })}
@@ -973,10 +995,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Person <span className="text-red-500">*</span></label>
+                  <label htmlFor="school-contact-person" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Person<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="school-contact-person"
                       type="text"
                       value={schoolData.contactPerson}
                       onChange={e => setSchoolData({ ...schoolData, contactPerson: e.target.value })}
@@ -988,10 +1011,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Inquiry Phone <span className="text-red-500">*</span></label>
+                  <label htmlFor="school-phone" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Inquiry Phone<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="school-phone"
                       type="tel"
                       value={schoolData.phone}
                       onChange={e => setSchoolData({ ...schoolData, phone: e.target.value })}
@@ -1003,10 +1027,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email <span className="text-red-500">*</span></label>
+                  <label htmlFor="school-email" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email<span className="text-red-500 ml-1">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
+                      id="school-email"
                       type="email"
                       value={schoolData.email}
                       onChange={e => setSchoolData({ ...schoolData, email: e.target.value })}
@@ -1019,10 +1044,11 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Location / Town <span className="text-red-500">*</span></label>
+                <label htmlFor="school-location" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Location / Town<span className="text-red-500 ml-1">*</span></label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                   <input
+                    id="school-location"
                     type="text"
                     value={schoolData.location}
                     onChange={e => setSchoolData({ ...schoolData, location: e.target.value })}
@@ -1034,9 +1060,10 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password <span className="text-red-500">*</span></label>
+                <label htmlFor="school-password" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password<span className="text-red-500 ml-1">*</span></label>
                 <div className="relative">
                   <input
+                    id="school-password"
                     type={showSchoolPassword ? "text" : "password"}
                     value={schoolData.password}
                     onChange={e => setSchoolData({ ...schoolData, password: e.target.value })}
@@ -1058,8 +1085,9 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Faculty Requirement Specifications <span className="text-red-500">*</span></label>
+                <label htmlFor="school-details" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Faculty Requirement Specifications<span className="text-red-500 ml-1">*</span></label>
                 <textarea
+                  id="school-details"
                   value={schoolData.details}
                   onChange={e => setSchoolData({ ...schoolData, details: e.target.value })}
                   placeholder="Identify PGT/TGT subject vacancies, salary slabs, teacher eligibility criteria..."
@@ -1195,7 +1223,10 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   <img
                     src={settings.qrCodeUrl ? getFullUrl(settings.qrCodeUrl) : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${settings.upiId || "6205355760-3@ybl"}&pn=Raft%20Tutor%20Axis&am=${settings.registrationFee || 149}&cu=INR`)}`}
                     className="w-full h-full object-contain"
-                    alt="Payment QR"
+                    alt="Payment QR Code for UPI Transaction"
+                    loading="lazy"
+                    width={144}
+                    height={144}
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#9bfc07]/10 to-transparent w-full h-full pointer-events-none animate-scan" style={{ animationDuration: '3s', animationIterationCount: 'infinite' }} />
                 </div>
@@ -1205,7 +1236,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-2 text-left">
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">UPI Transaction ID (12 digits) *</label>
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">UPI Transaction ID (12 digits)<span className="text-red-500 ml-1">*</span></label>
                   <input
                     type="text"
                     maxLength={12}
@@ -1222,7 +1253,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                   </p>
                 ) : (
                   <div className="space-y-1.5 text-left">
-                    <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">Payment Screenshot Receipt *</label>
+                    <label className="block text-[10px] uppercase font-bold tracking-widest text-zinc-400">Payment Screenshot Receipt<span className="text-red-500 ml-1">*</span></label>
                     <div className="flex items-center gap-3">
                       <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3.5 py-2 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
                         <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />

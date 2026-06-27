@@ -81,10 +81,12 @@ export default function Navbar({
         {/* Dynamic Settings Site Name / Brand Logo */}
         <div 
           onClick={() => onNavigate("home")} 
+          role="button"
+          aria-label="Go to homepage"
           className="cursor-pointer flex items-center gap-2"
         >
           {settings.logoUrl ? (
-            <img src={settings.logoUrl} className="h-8 w-auto object-contain" alt="Logo" />
+            <img src={settings.logoUrl} className="h-8 w-auto object-contain" alt="Raft Tutor Axis Brand Logo" loading="lazy" width={120} height={32} />
           ) : (
             <Logo lang={currentLang} />
           )}
@@ -123,6 +125,7 @@ export default function Navbar({
             onClick={onOpenOnboarding}
             className="flex items-center gap-1.5 p-2 rounded-lg bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
             title="Launch Interactive Walkthrough"
+            aria-label="Launch interactive guide walkthrough"
           >
             <HelpCircle className="w-4 h-4 text-[#9bfc07]" />
             <span>Guide</span>
@@ -132,6 +135,7 @@ export default function Navbar({
           <button
             onClick={() => onLanguageChange(currentLang === "en" ? "hi" : "en")}
             className="p-2 hover:bg-white/10 rounded-lg text-white flex items-center gap-1.5 text-[10px] font-bold uppercase cursor-pointer"
+            aria-label="Toggle language between English and Hindi"
           >
             <Languages className="w-4 h-4 text-[#9bfc07]" />
             <span>{currentLang === "en" ? "हिन्दी" : "Eng"}</span>
@@ -143,6 +147,7 @@ export default function Navbar({
             <a 
               href={`tel:${settings.supportPhone}`} 
               className="text-xs font-black text-white mt-1 hover:text-[#9bfc07] transition-all block"
+              aria-label={`Call Support Helpline at ${settings.supportPhone}`}
             >
               {settings.supportPhone}
             </a>
@@ -166,6 +171,9 @@ export default function Navbar({
                 size="sm"
                 onClick={() => setIsPortalDropdownOpen(!isPortalDropdownOpen)}
                 className="flex items-center gap-1.5"
+                aria-haspopup="true"
+                aria-expanded={isPortalDropdownOpen}
+                aria-label="Toggle portal login options dropdown"
               >
                 <User className="w-3.5 h-3.5" />
                 <span>Portal Login</span>
@@ -208,6 +216,7 @@ export default function Navbar({
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 text-white hover:bg-white/10 rounded-lg focus:outline-none cursor-pointer"
+            aria-label={isOpen ? "Close mobile menu" : "Open mobile menu"}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

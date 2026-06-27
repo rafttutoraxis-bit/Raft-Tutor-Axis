@@ -313,8 +313,9 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
           {authCardMode === "login" && (
             <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{emailLabel}</label>
+                <label htmlFor="login-email" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{emailLabel}<span className="text-red-500 ml-1">*</span></label>
                 <input
+                  id="login-email"
                   type="email"
                   placeholder={emailPlaceholder}
                   value={loginEmail}
@@ -325,11 +326,12 @@ export default function AdminPanel({ onForceRefresh, lang, mode = "admin" }: Adm
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                  {isUserMode ? "Password" : "Root Password"}
+                <label htmlFor="login-password" className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                  {isUserMode ? "Password" : "Root Password"}<span className="text-red-500 ml-1">*</span>
                 </label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showLoginPassword ? "text" : "password"}
                     placeholder={isUserMode ? "Enter password" : "Enter password token"}
                     value={loginPassword}

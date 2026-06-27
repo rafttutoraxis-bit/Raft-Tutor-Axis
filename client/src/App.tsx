@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Check, ArrowRight, Star, Heart, Activity, Sparkles, Navigation, Award, BookOpen, Users, Compass, Globe } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -12,10 +13,16 @@ import Footer from "./components/Footer";
 // Context Hooks & Portals
 import { useAuth } from "./contexts/AuthContext";
 import { useSettings } from "./contexts/SettingsContext";
-import AdminPanel from "./components/AdminPanel";
-import TeacherDashboard from "./components/Teacher/TeacherDashboard";
-import ParentDashboard from "./components/Parent/ParentDashboard";
-import SchoolDashboard from "./components/School/SchoolDashboard";
+
+// SEO & Schemas
+import SEO from "./components/SEO";
+import { pageSeoConfigs } from "./utils/seoData";
+
+// Lazy-loaded heavy dashboards for performance / code-splitting
+const AdminPanel = lazy(() => import("./components/AdminPanel"));
+const TeacherDashboard = lazy(() => import("./components/Teacher/TeacherDashboard"));
+const ParentDashboard = lazy(() => import("./components/Parent/ParentDashboard"));
+const SchoolDashboard = lazy(() => import("./components/School/SchoolDashboard"));
 
 import { servicesData, whyChooseBenefits, founderCardsList, dummyTestimonials } from "./data";
 import { Language } from "./types";
@@ -26,9 +33,38 @@ export default function App() {
   const [lang, setLang] = useState<Language>("en");
   const [activeSection, setActiveSection] = useState("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Auto-reload synchronization key to notify Admin of database changes
   const [syncKey, setSyncKey] = useState(0);
+
+  // Sync scroll positioning on route change for clean SEO URLs
+  useEffect(() => {
+    const path = location.pathname;
+    let targetSection = "home";
+    if (path === "/about") {
+      targetSection = "about";
+    } else if (path === "/services") {
+      targetSection = "services";
+    } else if (path === "/register") {
+      targetSection = "inquiry-forms-section";
+    } else if (path === "/founders") {
+      targetSection = "founders";
+    } else if (path === "/contact") {
+      targetSection = "contact";
+    }
+
+    setActiveSection(targetSection);
+    if (targetSection === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      const element = document.getElementById(targetSection);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location.pathname]);
 
   // Trigger onboarding on first visit based on session memory, and ensure dark mode is removed from document root
   useEffect(() => {
@@ -51,12 +87,22 @@ export default function App() {
     setLang(selectedLang);
   };
 
-  // Handle smooth scroll navigation
+  // Handle smooth scroll navigation by changing client-side path
   const handleScrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    let route = "/";
+    if (sectionId === "about") route = "/about";
+    else if (sectionId === "services") route = "/services";
+    else if (sectionId === "inquiry-forms-section") route = "/register";
+    else if (sectionId === "founders") route = "/founders";
+    else if (sectionId === "contact") route = "/contact";
+
+    if (location.pathname !== route) {
+      navigate(route);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   };
 
@@ -66,44 +112,73 @@ export default function App() {
 
   // Renders correct portal dashboard based on user role
   const renderDashboardPortal = () => {
-    if (!user) {
-      return (
-        <AdminPanel 
-          lang={lang} 
-          onForceRefresh={triggerAdminRefresh} 
-          mode="user"
-        />
-      );
-    }
-
-    switch (user.role) {
-      case "Super Admin":
-      case "Operations Manager":
-        return (
-          <div className="py-20 flex flex-col items-center justify-center text-white">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#9bfc07] mb-4" />
-            <p className="text-xs font-mono">Redirecting to Secure Portal Workspace...</p>
-          </div>
-        );
-      case "Teacher":
-        return <TeacherDashboard />;
-      case "Parent":
-        return <ParentDashboard />;
-      case "School":
-        return <SchoolDashboard />;
-      default:
-        return (
+    return (
+      <Suspense fallback={
+        <div className="py-20 flex flex-col items-center justify-center text-white">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#9bfc07] mb-4" />
+          <p className="text-xs font-mono">Loading Portal Workspace...</p>
+        </div>
+      }>
+        {!user ? (
           <AdminPanel 
             lang={lang} 
             onForceRefresh={triggerAdminRefresh} 
             mode="user"
           />
-        );
-    }
+        ) : (
+          (() => {
+            switch (user.role) {
+              case "Super Admin":
+              case "Operations Manager":
+                return (
+                  <div className="py-20 flex flex-col items-center justify-center text-white">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#9bfc07] mb-4" />
+                    <p className="text-xs font-mono">Redirecting to Secure Portal Workspace...</p>
+                  </div>
+                );
+              case "Teacher":
+                return <TeacherDashboard />;
+              case "Parent":
+                return <ParentDashboard />;
+              case "School":
+                return <SchoolDashboard />;
+              default:
+                return (
+                  <AdminPanel 
+                    lang={lang} 
+                    onForceRefresh={triggerAdminRefresh} 
+                    mode="user"
+                  />
+                );
+            }
+          })()
+        )}
+      </Suspense>
+    );
   };
+
+  // Determine correct SEO details dynamically
+  const getSeoConfig = () => {
+    const path = location.pathname;
+    if (path === "/about") return pageSeoConfigs.about;
+    if (path === "/services") return pageSeoConfigs.services;
+    if (path === "/register") return pageSeoConfigs.register;
+    if (path === "/founders") return pageSeoConfigs.founders;
+    if (path === "/contact") return pageSeoConfigs.contact;
+    return pageSeoConfigs.home;
+  };
+
+  const seo = getSeoConfig();
 
   return (
     <div className="min-h-screen bg-[#110d22] text-white transition-colors duration-300">
+      <SEO 
+        title={seo.title}
+        description={seo.description}
+        keywords={seo.keywords}
+        canonicalUrl={seo.canonicalUrl}
+        schemaData={seo.schemaData}
+      />
       
       {/* Dynamic Interactive Guide overlay */}
       {showOnboarding && (
@@ -160,8 +235,11 @@ export default function App() {
             <div className="md:col-span-5 relative">
               <div className="aspect-square bg-[#110d22] rounded-2xl overflow-hidden shadow-2xl relative border border-[#9bfc07]/10">
                 <img 
-                  src="/Tutoring.png"
-                  alt="Tutoring" 
+                  src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=600"
+                  alt="Students Studying with Tutor" 
+                  loading="lazy"
+                  width={600}
+                  height={600}
                   className="w-full h-full object-cover opacity-90 filter brightness-90 transition-all duration-500 hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
@@ -241,9 +319,9 @@ export default function App() {
                 <div className="h-6 w-6 rounded-full bg-[#9bfc07]/10 text-[#9bfc07] flex items-center justify-center font-display font-semibold mb-3">
                   ✓
                 </div>
-                <h4 className="font-display font-semibold text-xs text-white mb-1 tracking-wide">
+                <h3 className="font-display font-semibold text-xs text-white mb-1 tracking-wide">
                   {benefit.title}
-                </h4>
+                </h3>
                 <p className="text-[11px] text-gray-350 leading-relaxed">
                   {benefit.desc}
                 </p>
@@ -281,8 +359,11 @@ export default function App() {
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img
-                    src={founder.image}
-                    alt={founder.name}
+                    src={founder.image.startsWith("http") ? founder.image : `https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400`}
+                    alt={`Raft Tutor Axis Founder ${founder.name}`}
+                    loading="lazy"
+                    width={400}
+                    height={420}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover grayscale brightness-95 hover:grayscale-0 hover:brightness-100 transition-all duration-300"
                   />
@@ -329,7 +410,7 @@ export default function App() {
                   "{t.text}"
                 </p>
                 <div>
-                  <h5 className="font-display font-semibold text-xs text-white">{t.author}</h5>
+                  <h3 className="font-display font-semibold text-xs text-white">{t.author}</h3>
                   <p className="text-[10px] text-[#9bfc07] font-mono mt-0.5">{t.role}</p>
                 </div>
               </div>

@@ -1,0 +1,21 @@
+{
+  "short_name": "RaftTutorAxis",
+  "name": "Raft Tutor Axis Home Tuition & Teacher Provider",
+  "icons": [
+    {
+      "src": "/BG.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/BG.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#110d22",
+  "theme_color": "#110d22",
+  "display": "standalone",
+  "orientation": "portrait"
+}
