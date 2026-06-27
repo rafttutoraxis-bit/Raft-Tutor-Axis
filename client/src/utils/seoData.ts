@@ -53,7 +53,7 @@ export const baseSchema = {
       "@type": "WebSite",
       "@id": "https://rafttutoraxis.in/#website",
       "url": "https://rafttutoraxis.in",
-      "name": "Raft Tutor Axis",
+      "name": "Raft Tutor Axis"
     }
   ]
 };
@@ -110,7 +110,23 @@ export const faqSchema = {
         "@type": "Answer",
         "text": "Schools and coaching centers can submit their faculty specifications and salary slabs via the School Recruitment inquiry form. We match and forward pre-screened faculty profiles in 24 hours."
       }
+    },
+    {
+    "@type": "Question",
+    "name": "Which boards do you provide tutors for?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "We provide qualified tutors for CBSE, ICSE, State Boards and competitive exam preparation."
     }
+  },
+  {
+    "@type": "Question",
+    "name": "Do you provide online and home tuition?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Students can choose home tuition, online tuition or a hybrid mode depending on their learning needs."
+     }
+  }
   ]
 };
 
@@ -150,9 +166,9 @@ export const localBusinessSchema = {
 // SEO page configs mapping
 export const pageSeoConfigs = {
   home: {
-    title: "Raft Tutor Axis | Best Home Tutor & School Teacher Provider in India",
-    description: "Raft Tutor Axis connects parents, schools, coaching institutes and qualified teachers across India. Find trusted home tutors, online tutors and teaching jobs.",
-    keywords: "home tutor, tutor near me, home tuition, online tuition, school teacher jobs, teacher vacancy, tutor provider, Raft Tutor Axis, Bihar tutor, Gujarat tutor, Uttar Pradesh tutor",
+    title: "Home Tutor & Teacher Provider in India | Raft Tutor Axis",
+    description: "Find trusted home tutors, online tutors and verified teachers across India. Raft Tutor Axis connects parents, schools and coaching institutes with qualified educators for home tuition and teacher recruitment.",
+    keywords: "home tutor, home tuition, online tutor, private tutor, CBSE tutor, ICSE tutor, teacher provider, school teacher recruitment, tutor near me, teacher jobs India",
     canonicalUrl: "https://rafttutoraxis.in/",
     schemaData: [baseSchema, localBusinessSchema]
   },
