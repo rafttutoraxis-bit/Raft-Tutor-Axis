@@ -491,7 +491,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               <div className="flex items-center gap-2 mb-4 select-none">
                 <Sparkles className="w-5 h-5 text-[#9bfc07] animate-pulse" />
                 <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">
-                  {lang === "en" ? "Home Tuition Request Wizard" : "ट्यूटर अनुरोध केंद्र"}
+                  {lang === "en" ? "Home Tuition Request" : "ट्यूटर अनुरोध केंद्र"}
                 </h3>
               </div>
 
@@ -687,7 +687,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teacher Full Name *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teacher Full Name <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -702,7 +702,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Number *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Contact Number <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -717,7 +717,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -745,7 +745,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Highest Qualification *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Highest Qualification <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -760,7 +760,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Experience *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Experience <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Briefcase className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -775,7 +775,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">City Availability *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">City Availability <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -797,14 +797,14 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                       type="text"
                       value={teacherData.expectedFees}
                       onChange={e => setTeacherData({ ...teacherData, expectedFees: e.target.value })}
-                      placeholder="e.g. 15,000 / month"
+                      placeholder="e.g. 5,000 / month"
                       className="w-full bg-[#110d22] pl-10 pr-4 py-3 rounded-xl border border-zinc-800 focus:border-[#9bfc07] outline-none font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Specialist Subjects *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Specialist Subjects <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <BookOpen className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -819,7 +819,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Classes you teach *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Classes you teach <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Layers className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
@@ -847,7 +847,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Upload Biodata / Resume *</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Upload Biodata / Resume <span className="text-red-500">*</span></label>
                   <div className="flex items-center gap-3">
                     <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
                       <FileText className="w-3.5 h-3.5 text-[#9bfc07]" />
@@ -861,7 +861,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Professional Headshot</label>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Professional Profile</label>
                   <div className="flex items-center gap-3">
                     <label className="cursor-pointer bg-[#110d22] border border-zinc-800 hover:border-[#9bfc07] px-3 py-2.5 rounded-xl flex items-center gap-1.5 text-[10px] text-zinc-400 font-medium select-none">
                       <Camera className="w-3.5 h-3.5 text-[#9bfc07]" />
@@ -894,7 +894,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5 text-white text-xs">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password *</label>
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Create Password <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <input
                     type={showTeacherPassword ? "text" : "password"}
@@ -918,7 +918,7 @@ export default function Forms({ lang, onNewRegistration }: FormsProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address *</label>
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Physical Address <span className="text-red-500">*</span></label>
                 <textarea
                   value={teacherData.address}
                   onChange={e => setTeacherData({ ...teacherData, address: e.target.value })}
