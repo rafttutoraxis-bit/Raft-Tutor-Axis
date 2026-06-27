@@ -47,7 +47,7 @@ export default function SEO({
       {noindex ? (
         <meta name="robots" content="noindex, nofollow" />
       ) : (
-        <meta name="robots" content="index, follow" />
+        <meta   name="robots"   content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       )}
 
       {/* Canonical URL */}
@@ -59,6 +59,8 @@ export default function SEO({
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:url" content={ogUrl} />
+      <meta property="og:site_name" content="Raft Tutor Axis" />
+      <meta property="og:locale" content="en_IN" />
 
       {/* Twitter */}
       <meta name="twitter:card" content={twitterCard} />
@@ -77,35 +79,13 @@ export default function SEO({
       <meta name="msvalidate.01" content="YOUR_BING_WEBMASTER_VERIFICATION_PLACEHOLDER" />
       
       {/* Google Analytics 4 (GA4) Placeholder */}
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-GA4_MEASUREMENT_ID_PLACEHOLDER"></script>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZFGED5JHHR"></script>
       <script>
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-GA4_MEASUREMENT_ID_PLACEHOLDER');
-        `}
-      </script>
-
-      {/* Google Tag Manager (GTM) Placeholder */}
-      <script>
-        {`
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-PLACEHOLDER');
-        `}
-      </script>
-
-      {/* Microsoft Clarity Placeholder */}
-      <script>
-        {`
-          (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "CLARITY_PROJECT_ID_PLACEHOLDER");
+          gtag('config', 'G-ZFGED5JHHR');
         `}
       </script>
 
