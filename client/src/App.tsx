@@ -235,7 +235,7 @@ export default function App() {
             <div className="md:col-span-5 relative">
               <div className="aspect-square bg-[#110d22] rounded-2xl overflow-hidden shadow-2xl relative border border-[#9bfc07]/10">
                 <img 
-                  src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=600"
+                  src="Tutoring.png?auto=format&fit=crop&q=80&w=600"
                   alt="Students Studying with Tutor" 
                   loading="lazy"
                   width={600}
@@ -359,7 +359,7 @@ export default function App() {
               >
                 <div className="h-80 sm:h-[420px] relative bg-[#110d22]">
                   <img
-                    src={founder.image.startsWith("http") ? founder.image : `https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400`}
+                    src={founder.image`}
                     alt={`Raft Tutor Axis Founder ${founder.name}`}
                     loading="lazy"
                     width={400}
